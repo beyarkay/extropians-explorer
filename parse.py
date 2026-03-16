@@ -25,6 +25,7 @@ def init_db(conn: sqlite3.Connection):
             date_epoch INTEGER,
             year_month TEXT,
             from_name TEXT,
+            from_name_original TEXT,
             from_email TEXT,
             subject TEXT,
             body TEXT,
@@ -128,27 +129,71 @@ def parse_date(msg: email.message.Message) -> tuple[str | None, int | None, str 
 
 
 AUTHOR_ALIASES = {
+    # Lorrey
     "Mike Lorrey": "Michael Lorrey",
     "Michael S. Lorrey": "Michael Lorrey",
     "Michael S Lorrey": "Michael Lorrey",
+    # Yudkowsky
     "Eliezer S. Yudkowsky": "Eliezer Yudkowsky",
     "Eliezer S Yudkowsky": "Eliezer Yudkowsky",
+    "Sentient": "Eliezer Yudkowsky",
+    # Finney
     "Hal": "Hal Finney",
     "Hal Harold Finney": "Hal Finney",
-    "Spudboy100": "Spudboy100",
-    "Brian D Williams": "Brian D. Williams",
-    "Brian D Williams.": "Brian D. Williams",
-    "Technotranscendence": "Daniel Ust",
+    # Bostrom
+    "Nicholas Bostrom": "Nick Bostrom",
+    "Bostrom,N": "Nick Bostrom",
+    "Bostrom,N (pg)": "Nick Bostrom",
+    "N.Bostrom": "Nick Bostrom",
+    "N_\\Bostrom_At_{Posbn}": "Nick Bostrom",
+    # Bradbury
     "Robert J. Bradbury": "Robert Bradbury",
     "Robert J Bradbury": "Robert Bradbury",
+    # Molloy
     "J. R. Molloy": "J.R. Molloy",
     "J.R.Molloy": "J.R. Molloy",
     "J R Molloy": "J.R. Molloy",
+    # Butler
     "Michael M. Butler": "Michael Butler",
     "Michael M Butler": "Michael Butler",
-    "Max M": "Max M.",
-    "Lee Daniel Crocker": "Lee Daniel Crocker",
+    # Williams
+    "Brian D Williams": "Brian D. Williams",
+    "Brian D Williams.": "Brian D. Williams",
+    # Ust/Technotranscendence
+    "Technotranscendence": "Daniel Ust",
+    # Crocker
     "Ldcrocker": "Lee Daniel Crocker",
+    # Chislenko
+    "Alexander Chislenko": "Sasha Chislenko",
+    "Alexander 'Sasha' Chislenko": "Sasha Chislenko",
+    # Bokov
+    "Alex F. Bokov": "Alex Bokov",
+    "Alex Future Bokov": "Alex Bokov",
+    "Alexboko": "Alex Bokov",
+    # Allsop
+    "Brent.Allsop": "Brent Allsop",
+    # Avatar
+    "Avatar": "Avatar Polymorph",
+    # Staring
+    "Berrie": "Berrie Staring",
+    # Max M (not Max More)
+    "Max M": "Max M.",
+    # Natasha
+    "Natasha Vita More": "Natasha Vita-More",
+    "Natasha V. More": "Natasha Vita-More",
+    # Dehede
+    "Dehede011": "Ron Hale-Evans",
+    # Spudboy
+    "Spudboy100": "Spudboy100",
+    # ABlainey
+    "Ablainey": "ABlainey",
+    # Adrian Karth
+    "Adrian_Karth_At_Netconnect": "Adrian Karth",
+    # Animated Silicon Love Doll
+    "Animated Silicon Love Doll": "Animated Silicon Love Doll",
+    # Artillo
+    "Artillo5": "Artillo",
+    "Artilloz": "Artillo",
 }
 
 
@@ -203,6 +248,8 @@ def parse_all():
                 from_name, from_email = email.utils.parseaddr(from_raw)
                 if not from_name:
                     from_name = from_email.split("@")[0] if from_email else "Unknown"
+                from_name_original = from_name.strip().strip('"').strip("'")
+                from_name_original = re.sub(r"\s+", " ", from_name_original)
                 from_name = normalise_name(from_name)
 
                 subject = decode_header(msg.get("Subject", ""))
@@ -213,11 +260,11 @@ def parse_all():
 
                 conn.execute(
                     """INSERT OR IGNORE INTO messages
-                       (message_id, date, date_epoch, year_month, from_name, from_email,
-                        subject, body, in_reply_to, refs, source_file)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (message_id, date_iso, date_epoch, year_month, from_name, from_email,
-                     subject, body, in_reply_to, references, mbox_path.name),
+                       (message_id, date, date_epoch, year_month, from_name, from_name_original,
+                        from_email, subject, body, in_reply_to, refs, source_file)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (message_id, date_iso, date_epoch, year_month, from_name, from_name_original,
+                     from_email, subject, body, in_reply_to, references, mbox_path.name),
                 )
                 if conn.total_changes > total + count:
                     count += 1
