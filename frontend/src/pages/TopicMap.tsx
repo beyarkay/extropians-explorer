@@ -178,6 +178,9 @@ export default function TopicMap() {
     }
   }, [view])
 
+  // Track canvas size separately to avoid resizing every frame
+  const canvasSizeRef = useRef({ w: 0, h: 0 })
+
   // Draw
   useEffect(() => {
     const canvas = canvasRef.current
@@ -187,9 +190,17 @@ export default function TopicMap() {
     if (!ctx) return
 
     const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width * window.devicePixelRatio
-    canvas.height = rect.height * window.devicePixelRatio
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    const targetW = Math.round(rect.width * window.devicePixelRatio)
+    const targetH = Math.round(rect.height * window.devicePixelRatio)
+
+    // Only resize canvas when container size actually changes
+    if (canvasSizeRef.current.w !== targetW || canvasSizeRef.current.h !== targetH) {
+      canvas.width = targetW
+      canvas.height = targetH
+      canvasSizeRef.current = { w: targetW, h: targetH }
+    }
+
+    ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0)
 
     ctx.fillStyle = '#0d1117'
     ctx.fillRect(0, 0, rect.width, rect.height)
