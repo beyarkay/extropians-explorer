@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { tagColor, tagBg } from '../tagColors'
+import ThreadList from '../components/ThreadList'
 
 interface TimelinePoint { month: string; count: number }
 interface Stats {
@@ -10,30 +10,14 @@ interface Stats {
   threads: number
   date_range: { start: string; end: string }
 }
-interface Thread {
-  thread_id: string
-  subject: string
-  message_count: number
-  first_date: string
-  last_date: string
-  participants: string[]
-  tags: string[]
-}
 interface AuthorSuggestion { name: string; post_count: number }
 interface Tag { tag: string; count: number }
-
-type SortOption = 'replies' | 'date_desc' | 'date_asc' | 'recent_activity'
 
 export default function Timeline() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [timeline, setTimeline] = useState<TimelinePoint[]>([])
-  const [threads, setThreads] = useState<Thread[]>([])
-  const [totalThreads, setTotalThreads] = useState(0)
-  const [page, setPage] = useState(1)
-  const [sort, setSort] = useState<SortOption>('replies')
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedMonth = searchParams.get('month')
-  const navigate = useNavigate()
 
   // Participant filter
   const [participants, setParticipants] = useState<string[]>([])
@@ -60,20 +44,6 @@ export default function Timeline() {
     fetch(`/api/timeline${qs ? '?' + qs : ''}`).then(r => r.json()).then(setTimeline)
   }, [participants, selectedTag])
 
-  useEffect(() => {
-    const params = new URLSearchParams()
-    if (selectedMonth) params.set('month', selectedMonth)
-    params.set('sort', sort)
-    params.set('page', String(page))
-    params.set('per_page', '50')
-    for (const p of participants) params.append('participants', p)
-    if (selectedTag) params.set('tag', selectedTag)
-    fetch(`/api/threads?${params}`).then(r => r.json()).then(data => {
-      setThreads(data.threads)
-      setTotalThreads(data.total)
-    })
-  }, [selectedMonth, sort, page, participants, selectedTag])
-
   // Autocomplete
   useEffect(() => {
     if (participantInput.length < 2) { setSuggestions([]); return }
@@ -86,10 +56,7 @@ export default function Timeline() {
   }, [participantInput])
 
   const addParticipant = (name: string) => {
-    if (!participants.includes(name)) {
-      setParticipants([...participants, name])
-      setPage(1)
-    }
+    if (!participants.includes(name)) setParticipants([...participants, name])
     setParticipantInput('')
     setSuggestions([])
     setShowSuggestions(false)
@@ -97,24 +64,15 @@ export default function Timeline() {
 
   const removeParticipant = (name: string) => {
     setParticipants(participants.filter(p => p !== name))
-    setPage(1)
   }
 
   const handleBarClick = (data: { month: string }) => {
-    setPage(1)
     if (data.month === selectedMonth) {
       setSearchParams({})
     } else {
       setSearchParams({ month: data.month })
     }
   }
-
-  const formatDate = (d: string | null) => {
-    if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' })
-  }
-
-  const totalPages = Math.ceil(totalThreads / 50)
 
   return (
     <>
@@ -146,7 +104,7 @@ export default function Timeline() {
             <>
               {' '}— <span style={{ color: 'var(--accent)' }}>{selectedMonth}</span>
               {' '}
-              <a href="#" onClick={e => { e.preventDefault(); setSearchParams({}); setPage(1) }}
+              <a href="#" onClick={e => { e.preventDefault(); setSearchParams({}) }}
                 style={{ fontSize: 10 }}>[clear]</a>
             </>
           )}
@@ -177,7 +135,7 @@ export default function Timeline() {
         </ResponsiveContainer>
       </div>
 
-      {/* Participant filter */}
+      {/* Filters */}
       <div className="filter-bar">
         <div style={{ position: 'relative' }} ref={suggestRef}>
           <input
@@ -228,11 +186,10 @@ export default function Timeline() {
               style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>x</a>
           </span>
         ))}
-        {/* Tag filter */}
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 4 }}>topic:</span>
         <select
           value={selectedTag || ''}
-          onChange={e => { setSelectedTag(e.target.value || null); setPage(1) }}
+          onChange={e => { setSelectedTag(e.target.value || null) }}
           style={{ width: 130 }}
         >
           <option value="">all topics</option>
@@ -241,77 +198,16 @@ export default function Timeline() {
           ))}
         </select>
         {selectedTag && (
-          <a href="#" onClick={e => { e.preventDefault(); setSelectedTag(null); setPage(1) }}
+          <a href="#" onClick={e => { e.preventDefault(); setSelectedTag(null) }}
             style={{ fontSize: 10 }}>[clear]</a>
         )}
       </div>
 
-      <div className="section-header">
-        <h2>
-          {selectedMonth ? `threads from ${selectedMonth}` : 'threads'}
-          {participants.length > 0 && ` with ${participants.join(' + ')}`}
-          {selectedTag && ` tagged "${selectedTag}"`}
-          {' '}({totalThreads.toLocaleString()})
-        </h2>
-        <div style={{ display: 'flex', gap: 4, fontSize: 10 }}>
-          sort:
-          {(['replies', 'date_desc', 'date_asc', 'recent_activity'] as SortOption[]).map(s => (
-            <a
-              key={s}
-              href="#"
-              onClick={e => { e.preventDefault(); setSort(s); setPage(1) }}
-              style={{ color: sort === s ? 'var(--accent)' : 'var(--text-tertiary)', marginLeft: 4 }}
-            >
-              {s === 'replies' ? 'most replies' : s === 'date_desc' ? 'newest' : s === 'date_asc' ? 'oldest' : 'recent activity'}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <div className="thread-list">
-        {threads.map(t => {
-          const firstAuthor = t.participants[0] || ''
-          const nParticipants = t.participants.length
-          return (
-            <div
-              key={t.thread_id}
-              className="thread-item"
-              onClick={() => navigate(`/thread/${encodeURIComponent(t.thread_id)}`)}
-            >
-              <span className="count">{t.message_count}</span>
-              <span className="subject">{t.subject || '(no subject)'}</span>
-              {t.tags.length > 0 && (
-                <span className="msg-tags" onClick={e => e.stopPropagation()}>
-                  {t.tags.map(tag => (
-                    <Link key={tag} to={`/?tag=${tag}`} className="tag" style={{ color: tagColor(tag), background: tagBg(tag) }}>{tag}</Link>
-                  ))}
-                </span>
-              )}
-              <span className="meta">
-                <Link
-                  to={`/author/${encodeURIComponent(firstAuthor)}`}
-                  className="author-name"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {firstAuthor}
-                </Link>
-                {nParticipants > 1 && (
-                  <span style={{ color: 'var(--text-tertiary)' }}>+{nParticipants - 1}</span>
-                )}
-                <span>{formatDate(t.first_date)}</span>
-              </span>
-            </div>
-          )
-        })}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← prev</button>
-          <span className="page-info">{page}/{totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>next →</button>
-        </div>
-      )}
+      <ThreadList
+        month={selectedMonth}
+        participants={participants}
+        tag={selectedTag}
+      />
     </>
   )
 }
