@@ -2,12 +2,35 @@ import type { ReactNode } from 'react'
 
 const URL_RE = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
 
-/** Linkify URLs within a single line */
-function linkifyLine(text: string): ReactNode[] {
+/** Format a date string as YYYYMMDD for Wayback Machine */
+function toWaybackDate(dateStr: string | undefined): string {
+  if (!dateStr) return '20000101'
+  try {
+    const d = new Date(dateStr)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}${m}${day}`
+  } catch {
+    return '20000101'
+  }
+}
+
+/** Linkify URLs within a single line, with optional Wayback Machine links */
+function linkifyLine(text: string, messageDate?: string): ReactNode[] {
   const parts = text.split(URL_RE)
   return parts.map((part, i) =>
     URL_RE.test(part) ? (
-      <a key={i} href={part} target="_blank" rel="noopener noreferrer">{part}</a>
+      <span key={i} className="linked-url">
+        <a href={part} target="_blank" rel="noopener noreferrer">{part}</a>
+        <a
+          href={`https://web.archive.org/web/${toWaybackDate(messageDate)}*/${part}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="wayback-link"
+          title="View on Wayback Machine"
+        >&#x1f4e6;</a>
+      </span>
     ) : (
       part
     )
@@ -15,7 +38,7 @@ function linkifyLine(text: string): ReactNode[] {
 }
 
 /** Render message body with quoted lines styled and URLs as links */
-export function renderBody(text: string): ReactNode[] {
+export function renderBody(text: string, messageDate?: string): ReactNode[] {
   const lines = text.split('\n')
   const result: ReactNode[] = []
   let quoteBlock: string[] = []
@@ -25,7 +48,7 @@ export function renderBody(text: string): ReactNode[] {
       result.push(
         <div key={`q-${result.length}`} className="quoted-text">
           {quoteBlock.map((line, i) => (
-            <div key={i}>{linkifyLine(line)}</div>
+            <div key={i}>{linkifyLine(line, messageDate)}</div>
           ))}
         </div>
       )
@@ -38,12 +61,11 @@ export function renderBody(text: string): ReactNode[] {
       quoteBlock.push(line)
     } else {
       flushQuote()
-      result.push(<div key={`l-${result.length}`}>{linkifyLine(line)}</div>)
+      result.push(<div key={`l-${result.length}`}>{linkifyLine(line, messageDate)}</div>)
     }
   }
   flushQuote()
   return result
 }
 
-// Keep backward compat
 export const linkify = renderBody

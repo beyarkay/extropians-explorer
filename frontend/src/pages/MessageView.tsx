@@ -80,7 +80,7 @@ export default function MessageView() {
         borderRadius: 3, padding: '8px 12px',
         fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
       }}>
-        {renderBody(msg.body)}
+        {renderBody(msg.body, msg.date)}
       </div>
 
       {/* Bottom nav */}

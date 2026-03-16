@@ -309,6 +309,21 @@ mark {
   font-size: 10px;
 }
 
+/* ── URL links with Wayback ── */
+.linked-url {
+  display: inline;
+}
+.wayback-link {
+  margin-left: 2px;
+  font-size: 10px;
+  opacity: 0.4;
+  text-decoration: none !important;
+  vertical-align: baseline;
+}
+.wayback-link:hover {
+  opacity: 1;
+}
+
 /* ── Message view ── */
 .message-view {
   background: var(--bg-secondary);

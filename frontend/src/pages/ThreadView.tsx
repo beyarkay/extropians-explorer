@@ -111,7 +111,7 @@ export default function ThreadView() {
                 </span>
               </div>
               {expanded.has(m.id) && (
-                <div className="msg-body">{linkify(m.body)}</div>
+                <div className="msg-body">{linkify(m.body, m.date)}</div>
               )}
             </div>
           )
