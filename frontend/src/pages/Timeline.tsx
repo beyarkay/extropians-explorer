@@ -66,11 +66,11 @@ export default function Timeline() {
     setParticipants(participants.filter(p => p !== name))
   }
 
-  const handleBarClick = (data: { month: string }) => {
-    if (data.month === selectedMonth) {
+  const handleBarClick = (month: string) => {
+    if (month === selectedMonth) {
       setSearchParams({})
     } else {
-      setSearchParams({ month: data.month })
+      setSearchParams({ month })
     }
   }
 
