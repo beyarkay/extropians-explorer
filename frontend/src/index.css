@@ -393,6 +393,25 @@ mark {
   color: var(--text-secondary);
 }
 
+/* ── Tags ── */
+.msg-tags {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+.tag {
+  font-size: 9px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  text-decoration: none !important;
+}
+.tag:hover {
+  color: var(--accent);
+  background: rgba(88, 166, 255, 0.1);
+}
+
 /* ── Pagination ── */
 .pagination {
   display: flex;

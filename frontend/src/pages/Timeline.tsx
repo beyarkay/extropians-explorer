@@ -18,6 +18,7 @@ interface Thread {
   participants: string[]
 }
 interface AuthorSuggestion { name: string; post_count: number }
+interface Tag { tag: string; count: number }
 
 type SortOption = 'replies' | 'date_desc' | 'date_asc' | 'recent_activity'
 
@@ -39,9 +40,14 @@ export default function Timeline() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const suggestRef = useRef<HTMLDivElement>(null)
 
+  // Tags
+  const [allTags, setAllTags] = useState<Tag[]>([])
+  const [selectedTag, setSelectedTag] = useState<string | null>(searchParams.get('tag'))
+
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(setStats)
     fetch('/api/timeline').then(r => r.json()).then(setTimeline)
+    fetch('/api/tags').then(r => r.json()).then(setAllTags)
   }, [])
 
   useEffect(() => {
@@ -51,11 +57,12 @@ export default function Timeline() {
     params.set('page', String(page))
     params.set('per_page', '50')
     for (const p of participants) params.append('participants', p)
+    if (selectedTag) params.set('tag', selectedTag)
     fetch(`/api/threads?${params}`).then(r => r.json()).then(data => {
       setThreads(data.threads)
       setTotalThreads(data.total)
     })
-  }, [selectedMonth, sort, page, participants])
+  }, [selectedMonth, sort, page, participants, selectedTag])
 
   // Autocomplete
   useEffect(() => {
@@ -211,12 +218,29 @@ export default function Timeline() {
               style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>x</a>
           </span>
         ))}
+        {/* Tag filter */}
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 4 }}>topic:</span>
+        <select
+          value={selectedTag || ''}
+          onChange={e => { setSelectedTag(e.target.value || null); setPage(1) }}
+          style={{ width: 130 }}
+        >
+          <option value="">all topics</option>
+          {allTags.map(t => (
+            <option key={t.tag} value={t.tag}>{t.tag} ({t.count.toLocaleString()})</option>
+          ))}
+        </select>
+        {selectedTag && (
+          <a href="#" onClick={e => { e.preventDefault(); setSelectedTag(null); setPage(1) }}
+            style={{ fontSize: 10 }}>[clear]</a>
+        )}
       </div>
 
       <div className="section-header">
         <h2>
           {selectedMonth ? `threads from ${selectedMonth}` : 'threads'}
           {participants.length > 0 && ` with ${participants.join(' + ')}`}
+          {selectedTag && ` tagged "${selectedTag}"`}
           {' '}({totalThreads.toLocaleString()})
         </h2>
         <div style={{ display: 'flex', gap: 4, fontSize: 10 }}>

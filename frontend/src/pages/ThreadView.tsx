@@ -11,6 +11,7 @@ interface Message {
   subject: string
   body: string
   in_reply_to: string
+  tags: string[]
 }
 
 interface TreeNode {
@@ -191,6 +192,13 @@ export default function ThreadView() {
                   <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{m.subject}</span>
                 )}
                 <span className="date">{formatDate(m.date)}</span>
+                {m.tags.length > 0 && (
+                  <span className="msg-tags" onClick={e => e.stopPropagation()}>
+                    {m.tags.map(t => (
+                      <Link key={t} to={`/?tag=${t}`} className="tag">{t}</Link>
+                    ))}
+                  </span>
+                )}
                 <Link
                   to={`/message/${m.id}`}
                   onClick={e => e.stopPropagation()}
