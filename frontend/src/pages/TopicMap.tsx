@@ -202,6 +202,19 @@ export default function TopicMap() {
 
     ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0)
 
+    // Debug: log key values to find drift source
+    const _dbg = {
+      rectW: rect.width, rectH: rect.height,
+      canvasW: canvas.width, canvasH: canvas.height,
+      dpr: window.devicePixelRatio,
+      viewOx: view.ox, viewOy: view.oy, viewScale: view.scale,
+      boundsMinY: boundsRef.current.minY, boundsMaxY: boundsRef.current.maxY,
+    }
+    if (!(window as any)._lastDbg || JSON.stringify(_dbg) !== JSON.stringify((window as any)._lastDbg)) {
+      console.log('[TopicMap draw]', _dbg);
+      (window as any)._lastDbg = _dbg
+    }
+
     ctx.fillStyle = '#0d1117'
     ctx.fillRect(0, 0, rect.width, rect.height)
 
