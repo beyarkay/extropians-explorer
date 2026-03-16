@@ -6,6 +6,7 @@ import AuthorProfile from './pages/AuthorProfile'
 import ThreadView from './pages/ThreadView'
 import SearchResults from './pages/SearchResults'
 import MessageView from './pages/MessageView'
+import About from './pages/About'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,6 +26,7 @@ function App() {
         <nav>
           <NavLink to="/" end>Timeline</NavLink>
           <NavLink to="/authors">Authors</NavLink>
+          <NavLink to="/about">About</NavLink>
         </nav>
         <form className="search-box" onSubmit={handleSearch}>
           <span className="search-icon">&#x1F50D;</span>
@@ -44,6 +46,7 @@ function App() {
           <Route path="/thread/:threadId" element={<ThreadView />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/message/:id" element={<MessageView />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </div>
     </div>
