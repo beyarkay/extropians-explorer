@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
@@ -17,6 +17,7 @@ interface Thread {
   last_date: string
   participants: string[]
 }
+interface AuthorSuggestion { name: string; post_count: number }
 
 type SortOption = 'replies' | 'date_desc' | 'date_asc' | 'recent_activity'
 
@@ -31,6 +32,13 @@ export default function Timeline() {
   const selectedMonth = searchParams.get('month')
   const navigate = useNavigate()
 
+  // Participant filter
+  const [participants, setParticipants] = useState<string[]>([])
+  const [participantInput, setParticipantInput] = useState('')
+  const [suggestions, setSuggestions] = useState<AuthorSuggestion[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const suggestRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(setStats)
     fetch('/api/timeline').then(r => r.json()).then(setTimeline)
@@ -42,11 +50,38 @@ export default function Timeline() {
     params.set('sort', sort)
     params.set('page', String(page))
     params.set('per_page', '50')
+    for (const p of participants) params.append('participants', p)
     fetch(`/api/threads?${params}`).then(r => r.json()).then(data => {
       setThreads(data.threads)
       setTotalThreads(data.total)
     })
-  }, [selectedMonth, sort, page])
+  }, [selectedMonth, sort, page, participants])
+
+  // Autocomplete
+  useEffect(() => {
+    if (participantInput.length < 2) { setSuggestions([]); return }
+    const timer = setTimeout(() => {
+      fetch(`/api/authors/search?q=${encodeURIComponent(participantInput)}&limit=8`)
+        .then(r => r.json())
+        .then(setSuggestions)
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [participantInput])
+
+  const addParticipant = (name: string) => {
+    if (!participants.includes(name)) {
+      setParticipants([...participants, name])
+      setPage(1)
+    }
+    setParticipantInput('')
+    setSuggestions([])
+    setShowSuggestions(false)
+  }
+
+  const removeParticipant = (name: string) => {
+    setParticipants(participants.filter(p => p !== name))
+    setPage(1)
+  }
 
   const handleBarClick = (data: { month: string }) => {
     setPage(1)
@@ -125,9 +160,63 @@ export default function Timeline() {
         </ResponsiveContainer>
       </div>
 
+      {/* Participant filter */}
+      <div className="filter-bar">
+        <div style={{ position: 'relative' }} ref={suggestRef}>
+          <input
+            type="text"
+            placeholder="filter by participant..."
+            value={participantInput}
+            onChange={e => { setParticipantInput(e.target.value); setShowSuggestions(true) }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && suggestions.length > 0) {
+                e.preventDefault()
+                addParticipant(suggestions[0].name)
+              }
+            }}
+            style={{ width: 200 }}
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, zIndex: 50,
+              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+              borderRadius: 3, maxHeight: 200, overflow: 'auto', width: 280,
+            }}>
+              {suggestions.map(s => (
+                <div
+                  key={s.name}
+                  onClick={() => addParticipant(s.name)}
+                  style={{
+                    padding: '3px 8px', cursor: 'pointer', fontSize: 11,
+                    display: 'flex', justifyContent: 'space-between',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span>{s.name}</span>
+                  <span style={{ color: 'var(--text-tertiary)' }}>{s.post_count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {participants.map(p => (
+          <span key={p} style={{
+            background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 3,
+            fontSize: 11, display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            {p}
+            <a href="#" onClick={e => { e.preventDefault(); removeParticipant(p) }}
+              style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>x</a>
+          </span>
+        ))}
+      </div>
+
       <div className="section-header">
         <h2>
           {selectedMonth ? `threads from ${selectedMonth}` : 'threads'}
+          {participants.length > 0 && ` with ${participants.join(' + ')}`}
           {' '}({totalThreads.toLocaleString()})
         </h2>
         <div style={{ display: 'flex', gap: 4, fontSize: 10 }}>
