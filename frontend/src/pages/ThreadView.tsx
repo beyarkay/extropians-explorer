@@ -31,7 +31,6 @@ function buildTree(messages: Message[]): TreeNode[] {
 
   // Find the root: prefer messages that no other message replies to,
   // or messages without "Re:" in subject, falling back to first chronologically
-  const repliedTo = new Set(messages.map(m => m.in_reply_to).filter(Boolean))
   const candidates = messages.filter(m => !m.in_reply_to || !byMsgId.has(m.in_reply_to))
   const root = candidates.find(m => !m.subject.match(/^re:/i))
     || candidates[0]
