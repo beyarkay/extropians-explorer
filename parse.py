@@ -191,6 +191,50 @@ AUTHOR_ALIASES = {
     "Adrian_Karth_At_Netconnect": "Adrian Karth",
     # Animated Silicon Love Doll
     "Animated Silicon Love Doll": "Animated Silicon Love Doll",
+    # Chuck Kuecker
+    "Chuckkuecker": "Chuck Kuecker",
+    # Damien Sullivan
+    "Damien R. Sullivan": "Damien Sullivan",
+    # Dan Fabulich
+    "Daniel Fabulich": "Dan Fabulich",
+    # Eugene Leitl
+    "Eugene.Leitl": "Eugene Leitl",
+    "Eugen Leitl": "Eugene Leitl",
+    # John Clark
+    "John K Clark": "John Clark",
+    # John Grigg
+    "John M Grigg": "John Grigg",
+    # Lee Daniel Crocker
+    "Lee Daniel Crocker (None)": "Lee Daniel Crocker",
+    # Spike Jones
+    "Spike66": "Spike Jones",
+    "Spike": "Spike Jones",
+    "Jones, Spike": "Spike Jones",
+    # Robert Coyote
+    "[ Robert-Coyote ]": "Robert Coyote",
+    # Randy Smith
+    "Randy S": "Randy Smith",
+    "Randy": "Randy Smith",
+    # CurtAdams
+    "Curtadams": "Curt Adams",
+    # Mark Grant
+    "Mark": "Mark Grant",
+    # Corbally
+    "Corbally": "J Corbally",
+    "Foxleap Creations": "J Corbally",
+    # Joe Dees
+    "Joe E. Dees": "Joe Dees",
+    # Emlyn O'Regan
+    "Emlyn": "Emlyn O'Regan",
+    "Emlyn O'Regan": "Emlyn O'Regan",
+    "O'Regan, Emlyn": "Emlyn O'Regan",
+    # Rafal Smigrodzki
+    "Smigrodzki, Rafal": "Rafal Smigrodzki",
+    # Natasha (email-as-name variant)
+    "Natashavita@Earthlink.Net": "Natasha Vita-More",
+    # Greg Burch
+    "Gburch1": "Greg Burch",
+    "Gburch1@Aol.Com": "Greg Burch",
     # Artillo
     "Artillo5": "Artillo",
     "Artilloz": "Artillo",
