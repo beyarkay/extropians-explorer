@@ -416,14 +416,23 @@ def get_author(name: str):
         }
 
 
+def _fts5_escape(q: str) -> str:
+    """Escape a query string for FTS5. Wrap each term in double quotes."""
+    import re
+    # Split on whitespace, quote each term to avoid syntax errors
+    terms = q.strip().split()
+    return " ".join(f'"{t}"' for t in terms if t)
+
+
 @app.get("/api/search")
 def search(q: str = Query(..., min_length=2), page: int = 1, per_page: int = 50):
     offset = (page - 1) * per_page
+    fts_q = _fts5_escape(q)
     with get_db() as db:
         # FTS5 search
         total = db.execute(
             "SELECT COUNT(*) FROM messages_fts WHERE messages_fts MATCH ?",
-            (q,),
+            (fts_q,),
         ).fetchone()[0]
 
         rows = db.execute(
@@ -434,7 +443,7 @@ def search(q: str = Query(..., min_length=2), page: int = 1, per_page: int = 50)
                WHERE messages_fts MATCH ?
                ORDER BY rank
                LIMIT ? OFFSET ?""",
-            (q, per_page, offset),
+            (fts_q, per_page, offset),
         ).fetchall()
 
         return {
