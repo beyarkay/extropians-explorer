@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { linkify } from '../linkify'
 
 interface Message {
   id: number
@@ -139,7 +140,7 @@ export default function ThreadView() {
                 </span>
               </div>
               {expanded.has(m.id) && (
-                <div className="msg-body">{m.body}</div>
+                <div className="msg-body">{linkify(m.body)}</div>
               )}
             </div>
           )
