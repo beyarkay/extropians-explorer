@@ -554,9 +554,11 @@ def get_domain(domain: str, page: int = 1, per_page: int = 20):
 
 
 @app.get("/api/map/points")
-def map_points():
-    """Return all projected points for the topic map. Compact binary-friendly JSON."""
+def map_points(chunk: int = 0, chunk_size: int = 15000):
+    """Return projected points in chunks for progressive loading."""
+    offset = chunk * chunk_size
     with get_db() as db:
+        total = db.execute("SELECT COUNT(*) FROM projections").fetchone()[0]
         rows = db.execute("""
             SELECT p.message_id, p.x, p.y, p.cluster_id,
                    m.from_name, m.subject, m.year_month,
@@ -564,18 +566,25 @@ def map_points():
             FROM projections p
             JOIN messages m ON m.id = p.message_id
             ORDER BY p.message_id
-        """).fetchall()
+            LIMIT ? OFFSET ?
+        """, (chunk_size, offset)).fetchall()
 
-        # Also join tags per message
-        tag_rows = db.execute("""
-            SELECT mt.message_id, mt.tag FROM message_tags mt
-            JOIN projections p ON p.message_id = mt.message_id
-        """).fetchall()
+        # Tags for this chunk
+        msg_ids = [r["message_id"] for r in rows]
         tags_by_msg: dict[int, list[str]] = {}
-        for r in tag_rows:
+        if msg_ids:
+            placeholders = ",".join("?" * len(msg_ids))
+            tag_rows = db.execute(
+                f"SELECT message_id, tag FROM message_tags WHERE message_id IN ({placeholders})",
+                msg_ids,
+            ).fetchall()
+        for r in (tag_rows if msg_ids else []):
             tags_by_msg.setdefault(r["message_id"], []).append(r["tag"])
 
         return {
+            "total": total,
+            "chunk": chunk,
+            "has_more": offset + chunk_size < total,
             "points": [
                 {
                     "id": r["message_id"],
