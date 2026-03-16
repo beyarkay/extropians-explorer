@@ -57,6 +57,7 @@ def timeline():
 def list_threads(
     month: str | None = None,
     author: str | None = None,
+    participants: list[str] = Query(default=[]),
     sort: str = "replies",
     page: int = 1,
     per_page: int = 50,
@@ -74,6 +75,9 @@ def list_threads(
         if author:
             where.append("participants LIKE ?")
             params.append(f"%{author}%")
+        for p in participants:
+            where.append("participants LIKE ?")
+            params.append(f"%{p}%")
 
         where_clause = f"WHERE {' AND '.join(where)}" if where else ""
 
@@ -239,6 +243,17 @@ def get_message(message_id: int):
             "prev_in_thread_id": prev_in_thread[0] if prev_in_thread else None,
             "next_in_thread_id": next_in_thread[0] if next_in_thread else None,
         }
+
+
+@app.get("/api/authors/search")
+def search_authors(q: str = Query(..., min_length=1), limit: int = 10):
+    """Autocomplete author names."""
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT canonical_name, post_count FROM authors WHERE canonical_name LIKE ? ORDER BY post_count DESC LIMIT ?",
+            (f"%{q}%", limit),
+        ).fetchall()
+        return [{"name": r["canonical_name"], "post_count": r["post_count"]} for r in rows]
 
 
 @app.get("/api/authors")
