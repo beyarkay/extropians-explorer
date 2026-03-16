@@ -1,9 +1,9 @@
 :root {
   --bg: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --border: #30363d;
-  --text: #e6edf3;
+  --bg-secondary: #141419;
+  --bg-tertiary: #1c1c24;
+  --border: #2a2a35;
+  --text: #c9d1d9;
   --text-secondary: #8b949e;
   --text-tertiary: #6e7681;
   --accent: #58a6ff;
@@ -16,28 +16,18 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: Verdana, Geneva, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
-  font-size: 14px;
+  line-height: 1.4;
+  font-size: 12px;
 }
 
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--accent-hover);
-  text-decoration: underline;
-}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
 
 mark {
   background: rgba(210, 153, 34, 0.3);
@@ -52,7 +42,7 @@ mark {
   flex-direction: column;
 }
 
-/* Layout */
+/* ── Layout ── */
 .app-layout {
   display: flex;
   flex-direction: column;
@@ -62,32 +52,30 @@ mark {
 .app-header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
+  padding: 6px 16px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
-
 .app-header h1 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
+  color: var(--accent);
+  letter-spacing: -0.3px;
 }
-
 .app-header nav {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
-
 .app-header nav a {
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 3px 8px;
+  border-radius: 3px;
   color: var(--text-secondary);
-  font-size: 14px;
-  transition: all 0.15s;
+  font-size: 11px;
 }
 .app-header nav a:hover {
   background: var(--bg-tertiary);
@@ -97,6 +85,7 @@ mark {
 .app-header nav a.active {
   background: var(--bg-tertiary);
   color: var(--text);
+  font-weight: 600;
 }
 
 .search-box {
@@ -107,329 +96,333 @@ mark {
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 6px 12px 6px 32px;
-  border-radius: 6px;
-  font-size: 14px;
-  width: 280px;
+  padding: 3px 8px 3px 24px;
+  border-radius: 3px;
+  font-size: 11px;
+  width: 220px;
   outline: none;
+  font-family: inherit;
 }
-.search-box input:focus {
-  border-color: var(--accent);
-}
+.search-box input:focus { border-color: var(--accent); }
 .search-box .search-icon {
   position: absolute;
-  left: 10px;
+  left: 6px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .main-content {
   flex: 1;
-  padding: 24px;
-  max-width: 1200px;
+  padding: 8px 16px;
+  max-width: 1100px;
   margin: 0 auto;
   width: 100%;
 }
 
-/* Stats cards */
+/* ── Stats (compact inline) ── */
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 .stat-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 3px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 .stat-card .label {
-  font-size: 12px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   color: var(--text-tertiary);
-  margin-bottom: 4px;
 }
 .stat-card .value {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   font-family: var(--font-mono);
 }
 
-/* Timeline chart */
+/* ── Timeline chart ── */
 .timeline-chart {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 32px;
+  border-radius: 3px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
 }
 .timeline-chart h2 {
-  font-size: 16px;
-  margin-bottom: 16px;
-  color: var(--text-secondary);
+  font-size: 11px;
+  margin-bottom: 6px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-/* Thread list */
+/* ── Thread list (table-like rows) ── */
 .thread-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
 }
-
 .thread-item {
-  background: var(--bg-secondary);
-  padding: 12px 16px;
+  padding: 3px 6px;
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
-  transition: background 0.1s;
+  border-bottom: 1px solid var(--border);
 }
 .thread-item:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
 }
 .thread-item .subject {
   flex: 1;
-  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 12px;
 }
 .thread-item .meta {
   display: flex;
-  gap: 12px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 10px;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
 .thread-item .count {
   background: var(--bg-tertiary);
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 0 5px;
+  border-radius: 2px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  min-width: 20px;
+  text-align: center;
+}
+.thread-item .author-name {
+  color: var(--accent);
+  font-size: 10px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Author list */
+/* ── Author list (dense table) ── */
 .author-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
 }
 .author-item {
-  background: var(--bg-secondary);
-  padding: 10px 16px;
+  padding: 2px 6px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
-  transition: background 0.1s;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
 }
 .author-item:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
 }
 .author-item .rank {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 10px;
   color: var(--text-tertiary);
-  width: 32px;
+  width: 24px;
   text-align: right;
 }
 .author-item .name {
   flex: 1;
-  font-weight: 500;
 }
 .author-item .wiki-link {
-  font-size: 12px;
-  opacity: 0.6;
+  font-size: 10px;
+  opacity: 0.5;
 }
 .author-item .wiki-link:hover {
   opacity: 1;
 }
 .author-item .post-count {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-secondary);
+  min-width: 40px;
+  text-align: right;
 }
 .author-item .date-range {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--text-tertiary);
+  min-width: 130px;
+  text-align: right;
 }
 
-/* Message view */
-.message-view {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
+/* ── Thread view (conversation) ── */
+.thread-view {
+  display: flex;
+  flex-direction: column;
 }
-.message-header {
-  padding: 16px 20px;
+.thread-message {
   border-bottom: 1px solid var(--border);
 }
-.message-header .subject {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.message-header .meta-row {
+.thread-message .msg-header {
+  padding: 3px 6px;
   display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--text-secondary);
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 11px;
 }
-.message-body {
-  padding: 20px;
+.thread-message .msg-header:hover {
+  background: var(--bg-secondary);
+}
+.thread-message .msg-header .author {
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 11px;
+}
+.thread-message .msg-header .date {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+.thread-message .msg-body {
+  padding: 4px 6px 8px 36px;
   font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 11px;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
   color: var(--text);
 }
 
-/* Thread view */
-.thread-view {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.thread-message {
+/* ── Message view ── */
+.message-view {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 3px;
   overflow: hidden;
 }
-.thread-message .msg-header {
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.message-header {
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
 }
-.thread-message .msg-header:hover {
-  background: var(--bg-tertiary);
-}
-.thread-message .msg-header .author {
+.message-header .subject {
+  font-size: 14px;
   font-weight: 600;
-  color: var(--accent);
+  margin-bottom: 4px;
 }
-.thread-message .msg-header .date {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin-left: auto;
+.message-header .meta-row {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
-.thread-message .msg-body {
-  padding: 16px;
+.message-body {
+  padding: 8px 12px;
   font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 11px;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-/* Search results */
+/* ── Search results ── */
 .search-results .result-item {
-  background: var(--bg-secondary);
-  padding: 12px 16px;
+  padding: 3px 6px;
 }
 .search-results .result-item .snippet {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Author profile */
+/* ── Author profile ── */
 .author-profile {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 8px;
 }
 .author-profile .profile-header {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: 3px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 }
 .author-profile .profile-header h2 {
-  font-size: 24px;
+  font-size: 16px;
 }
 .author-profile .profile-stats {
   display: flex;
-  gap: 24px;
-  font-size: 14px;
+  gap: 16px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
-/* Pagination */
+/* ── Pagination ── */
 .pagination {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-top: 24px;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 0;
 }
 .pagination button {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 6px 14px;
-  border-radius: 6px;
+  padding: 2px 10px;
+  border-radius: 3px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
 }
-.pagination button:hover {
-  background: var(--bg-tertiary);
-}
-.pagination button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
+.pagination button:hover { background: var(--bg-tertiary); }
+.pagination button:disabled { opacity: 0.3; cursor: default; }
 .pagination .page-info {
-  padding: 6px 14px;
-  font-size: 13px;
+  padding: 2px 10px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
-/* Section header */
+/* ── Section header ── */
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+  margin-top: 4px;
 }
 .section-header h2 {
-  font-size: 16px;
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-/* Loading */
+/* ── Loading ── */
 .loading {
   text-align: center;
-  padding: 48px;
+  padding: 24px;
   color: var(--text-tertiary);
+  font-size: 12px;
 }
 
-/* Filter bar */
+/* ── Filter bar ── */
 .filter-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 4px;
+  margin-bottom: 6px;
   flex-wrap: wrap;
 }
 .filter-bar select,
@@ -437,34 +430,55 @@ mark {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
   outline: none;
+  font-family: inherit;
 }
 .filter-bar select:focus,
-.filter-bar input:focus {
-  border-color: var(--accent);
-}
+.filter-bar input:focus { border-color: var(--accent); }
 .filter-bar button {
   background: var(--accent);
   color: #fff;
   border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
+  padding: 2px 10px;
+  border-radius: 3px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
 }
-.filter-bar button:hover {
-  background: var(--accent-hover);
-}
+.filter-bar button:hover { background: var(--accent-hover); }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 16px;
-  font-size: 13px;
+  margin-bottom: 4px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
-.back-link:hover {
-  color: var(--accent);
+.back-link:hover { color: var(--accent); }
+
+/* ── Vote controls (compact) ── */
+.vote-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+}
+.vote-controls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-tertiary);
+}
+.vote-controls button:hover { color: var(--text); }
+.vote-controls button.upvoted { color: var(--green); }
+.vote-controls button.downvoted { color: var(--red); }
+.vote-controls .vote-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  min-width: 12px;
+  text-align: center;
 }
