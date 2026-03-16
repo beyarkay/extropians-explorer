@@ -198,6 +198,31 @@ def get_message(message_id: int):
         ).fetchone()
         if not m:
             return {"error": "not found"}
+
+        # Get prev/next by date
+        prev_msg = db.execute(
+            "SELECT id FROM messages WHERE date_epoch < (SELECT date_epoch FROM messages WHERE id = ?) ORDER BY date_epoch DESC LIMIT 1",
+            (message_id,),
+        ).fetchone()
+        next_msg = db.execute(
+            "SELECT id FROM messages WHERE date_epoch > (SELECT date_epoch FROM messages WHERE id = ?) ORDER BY date_epoch ASC LIMIT 1",
+            (message_id,),
+        ).fetchone()
+
+        # Get prev/next in same thread
+        prev_in_thread = db.execute(
+            """SELECT id FROM messages
+               WHERE thread_id = ? AND date_epoch < (SELECT date_epoch FROM messages WHERE id = ?)
+               ORDER BY date_epoch DESC LIMIT 1""",
+            (m["thread_id"], message_id),
+        ).fetchone()
+        next_in_thread = db.execute(
+            """SELECT id FROM messages
+               WHERE thread_id = ? AND date_epoch > (SELECT date_epoch FROM messages WHERE id = ?)
+               ORDER BY date_epoch ASC LIMIT 1""",
+            (m["thread_id"], message_id),
+        ).fetchone()
+
         return {
             "id": m["id"],
             "message_id": m["message_id"],
@@ -209,6 +234,10 @@ def get_message(message_id: int):
             "in_reply_to": m["in_reply_to"],
             "thread_id": m["thread_id"],
             "year_month": m["year_month"],
+            "prev_id": prev_msg[0] if prev_msg else None,
+            "next_id": next_msg[0] if next_msg else None,
+            "prev_in_thread_id": prev_in_thread[0] if prev_in_thread else None,
+            "next_in_thread_id": next_in_thread[0] if next_in_thread else None,
         }
 
 
