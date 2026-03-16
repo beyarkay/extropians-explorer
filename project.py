@@ -15,7 +15,7 @@ from umap import UMAP
 from tqdm import tqdm
 
 DB_PATH = "extropians.db"
-N_CLUSTERS = 20
+N_CLUSTERS = 75
 UMAP_NEIGHBORS = 15
 UMAP_MIN_DIST = 0.1
 
