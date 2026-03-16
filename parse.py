@@ -83,7 +83,7 @@ def decode_header(raw: str | None) -> str:
 
 
 def extract_body(msg: email.message.Message) -> str:
-    """Extract plain text body, stripping quoted text."""
+    """Extract plain text body, preserving quoted text for context."""
     body = ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -98,21 +98,10 @@ def extract_body(msg: email.message.Message) -> str:
         if payload:
             body = payload.decode("utf-8", errors="replace")
 
-    # Strip quoted lines (lines starting with >)
-    lines = body.split("\n")
-    cleaned = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith(">"):
-            continue
-        # Skip common quote headers
-        if re.match(r"^(On .+ wrote:|.*@.* wrote:|\-+ ?Original Message ?-+)", stripped, re.IGNORECASE):
-            continue
-        cleaned.append(line)
-
     # Remove trailing signature (lines after -- )
+    lines = body.split("\n")
     result = []
-    for line in cleaned:
+    for line in lines:
         if line.strip() == "-- " or line.strip() == "--":
             break
         result.append(line)
