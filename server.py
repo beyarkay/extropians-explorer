@@ -561,7 +561,7 @@ def map_points(chunk: int = 0, chunk_size: int = 1000):
         total = db.execute("SELECT COUNT(*) FROM projections").fetchone()[0]
         rows = db.execute("""
             SELECT p.message_id, p.x, p.y, p.cluster_id,
-                   m.from_name, m.subject, m.year_month,
+                   m.from_name, m.subject, m.year_month, m.thread_id,
                    SUBSTR(m.body, 1, 300) as preview
             FROM projections p
             JOIN messages m ON m.id = p.message_id
@@ -596,6 +596,7 @@ def map_points(chunk: int = 0, chunk_size: int = 1000):
                     "m": r["year_month"],
                     "p": (r["preview"] or "")[:250],
                     "t": tags_by_msg.get(r["message_id"], []),
+                    "th": r["thread_id"],
                 }
                 for r in rows
             ],

@@ -4,7 +4,7 @@ import { messagePath } from '../utils/routes'
 
 interface Point {
   id: number; x: number; y: number; c: number
-  a: string; s: string; m: string; p: string; t: string[]
+  a: string; s: string; m: string; p: string; t: string[]; th: string
 }
 interface Cluster {
   id: number; label: string; count: number
@@ -123,6 +123,24 @@ export default function TopicMap() {
     return () => clearTimeout(timer)
   }, [participantInput])
 
+  // Build thread index: thread_id → Set<message_id>
+  const threadIndex = useMemo(() => {
+    const idx = new Map<string, Set<number>>()
+    for (const p of allPoints) {
+      if (!p.th) continue
+      let s = idx.get(p.th)
+      if (!s) { s = new Set(); idx.set(p.th, s) }
+      s.add(p.id)
+    }
+    return idx
+  }, [allPoints])
+
+  // Set of message IDs in the hovered point's thread
+  const highlightedThread = useMemo(() => {
+    if (!hoveredPoint?.th) return null
+    return threadIndex.get(hoveredPoint.th) || null
+  }, [hoveredPoint, threadIndex])
+
   // Filter points
   const points = useMemo(() => {
     let filtered = allPoints
@@ -189,18 +207,25 @@ export default function TopicMap() {
     }
 
     // Draw active points
-    ctx.globalAlpha = isFiltered ? 0.9 : 0.6
+    const ht = highlightedThread
     for (const p of points) {
       const { x, y } = toCanvas(p.x, p.y, canvas)
       const sx = x / window.devicePixelRatio
       const sy = y / window.devicePixelRatio
       if (sx < -5 || sx > rect.width + 5 || sy < -5 || sy > rect.height + 5) continue
 
+      const inThread = ht && ht.has(p.id)
+      ctx.globalAlpha = ht
+        ? (inThread ? 1.0 : 0.08)
+        : (isFiltered ? 0.9 : 0.6)
+
       ctx.fillStyle = colorMode === 'cluster' ? clusterColor(p.c)
         : colorMode === 'year' ? yearColor(p.m)
         : colorMode === 'author' ? authorColor(p.a)
         : tagColors(p.t)
-      ctx.fillRect(sx - dotSize, sy - dotSize, dotSize * 2, dotSize * 2)
+
+      const size = inThread ? dotSize * 2.5 : dotSize
+      ctx.fillRect(sx - size, sy - size, size * 2, size * 2)
     }
 
     ctx.globalAlpha = 1.0
@@ -238,7 +263,7 @@ export default function TopicMap() {
         ctx.fillText(String(y), rect.width - 65, 19 + i * 14)
       }
     }
-  }, [allPoints, points, clusters, view, colorMode, isFiltered, selectedCluster, toCanvas])
+  }, [allPoints, points, clusters, view, colorMode, isFiltered, selectedCluster, highlightedThread, toCanvas])
 
   // Mouse handlers
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
