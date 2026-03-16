@@ -401,7 +401,12 @@ if frontend_dir.exists():
 
     @app.get("/{full_path:path}")
     def serve_spa(full_path: str):
+        # Don't serve index.html for API routes
+        if full_path.startswith("api/"):
+            return {"error": "not found"}
+        # Serve static files if they exist
         file_path = frontend_dir / full_path
-        if file_path.is_file():
+        if file_path.is_file() and ".." not in full_path:
             return FileResponse(file_path)
+        # Everything else gets the SPA index.html
         return FileResponse(frontend_dir / "index.html")
