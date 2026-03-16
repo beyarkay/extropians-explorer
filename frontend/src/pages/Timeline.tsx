@@ -26,12 +26,17 @@ export default function Timeline() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const suggestRef = useRef<HTMLDivElement>(null)
 
-  // Tags
+  // Tags & Clusters
   const [allTags, setAllTags] = useState<Tag[]>([])
   const [selectedTag, setSelectedTag] = useState<string | null>(searchParams.get('tag'))
+  const [allClusters, setAllClusters] = useState<{ id: number; label: string; count: number }[]>([])
+  const [selectedCluster, setSelectedCluster] = useState<number | null>(
+    searchParams.get('cluster') ? parseInt(searchParams.get('cluster')!) : null
+  )
 
   useEffect(() => {
     fetch('/api/tags').then(r => r.json()).then(setAllTags)
+    fetch('/api/clusters').then(r => r.json()).then(setAllClusters)
   }, [])
 
   // Filtered stats and timeline
@@ -177,11 +182,27 @@ export default function Timeline() {
           <a href="#" onClick={e => { e.preventDefault(); setSelectedTag(null) }}
             style={{ fontSize: 10 }}>[clear]</a>
         )}
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 4 }}>cluster:</span>
+        <select
+          value={selectedCluster ?? ''}
+          onChange={e => { setSelectedCluster(e.target.value ? parseInt(e.target.value) : null) }}
+          style={{ width: 180 }}
+        >
+          <option value="">all clusters</option>
+          {allClusters.map(c => (
+            <option key={c.id} value={c.id}>{c.label} ({c.count})</option>
+          ))}
+        </select>
+        {selectedCluster != null && (
+          <a href="#" onClick={e => { e.preventDefault(); setSelectedCluster(null) }}
+            style={{ fontSize: 10 }}>[clear]</a>
+        )}
       </div>
 
       <ThreadList
         month={selectedMonth}
         participants={participants}
+        cluster={selectedCluster}
         tag={selectedTag}
       />
     </>

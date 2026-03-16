@@ -21,19 +21,20 @@ interface Props {
   author?: string
   participants?: string[]
   tag?: string | null
+  cluster?: number | null
   month?: string | null
   hideSort?: boolean
   defaultSort?: SortOption
 }
 
-export default function ThreadList({ author, participants, tag, month, hideSort, defaultSort = 'replies' }: Props) {
+export default function ThreadList({ author, participants, tag, cluster, month, hideSort, defaultSort = 'replies' }: Props) {
   const [threads, setThreads] = useState<Thread[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<SortOption>(defaultSort)
   const navigate = useNavigate()
 
-  useEffect(() => { setPage(1) }, [author, tag, month, JSON.stringify(participants)])
+  useEffect(() => { setPage(1) }, [author, tag, cluster, month, JSON.stringify(participants)])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -41,6 +42,7 @@ export default function ThreadList({ author, participants, tag, month, hideSort,
     if (author) params.set('author', author)
     if (participants) for (const p of participants) params.append('participants', p)
     if (tag) params.set('tag', tag)
+    if (cluster != null) params.set('cluster', String(cluster))
     params.set('sort', sort)
     params.set('page', String(page))
     params.set('per_page', '50')
@@ -48,7 +50,7 @@ export default function ThreadList({ author, participants, tag, month, hideSort,
       setThreads(data.threads)
       setTotal(data.total)
     })
-  }, [author, tag, month, sort, page, JSON.stringify(participants)])
+  }, [author, tag, cluster, month, sort, page, JSON.stringify(participants)])
 
   const totalPages = Math.ceil(total / 50)
 

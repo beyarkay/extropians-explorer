@@ -15,7 +15,10 @@ interface Message {
   body: string
   in_reply_to: string
   tags: string[]
+  cluster_id: number | null
 }
+
+interface ClusterInfo { id: number; label: string; count: number }
 
 interface TreeNode {
   message: Message
@@ -90,6 +93,7 @@ export default function ThreadView() {
   const [messages, setMessages] = useState<Message[]>([])
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
   const [votes, setVotes] = useState<Record<number, number>>({})
+  const [clusterMap, setClusterMap] = useState<Record<number, string>>({})
 
   useEffect(() => {
     if (threadId) {
@@ -98,6 +102,14 @@ export default function ThreadView() {
         .then(setMessages)
     }
   }, [threadId])
+
+  useEffect(() => {
+    fetch('/api/clusters').then(r => r.json()).then((cs: ClusterInfo[]) => {
+      const map: Record<number, string> = {}
+      for (const c of cs) map[c.id] = c.label
+      setClusterMap(map)
+    })
+  }, [])
 
   useEffect(() => {
     const stored = localStorage.getItem('extropians-votes')
@@ -216,13 +228,17 @@ export default function ThreadView() {
                   {m.subject || '(no subject)'}
                 </span>
                 <span className="date">{formatDate(m.date)}</span>
-                {m.tags.length > 0 && (
-                  <span className="msg-tags" onClick={e => e.stopPropagation()}>
-                    {m.tags.map(t => (
-                      <Link key={t} to={`/?tag=${t}`} className="tag" style={{ color: tagColor(t), background: tagBg(t) }}>{t}</Link>
-                    ))}
-                  </span>
-                )}
+                <span className="msg-tags" onClick={e => e.stopPropagation()}>
+                  {m.cluster_id != null && clusterMap[m.cluster_id] && (
+                    <Link to={`/?cluster=${m.cluster_id}`} className="tag"
+                      style={{ color: `hsl(${(m.cluster_id * 137.508) % 360}, 50%, 55%)`, background: `hsl(${(m.cluster_id * 137.508) % 360}, 30%, 18%)`, borderLeft: '2px solid' }}>
+                      {clusterMap[m.cluster_id].split(' / ').slice(0, 2).join('/')}
+                    </Link>
+                  )}
+                  {m.tags.map(t => (
+                    <Link key={t} to={`/?tag=${t}`} className="tag" style={{ color: tagColor(t), background: tagBg(t) }}>{t}</Link>
+                  ))}
+                </span>
                 <Link
                   to={messagePath(m.id)}
                   onClick={e => e.stopPropagation()}
