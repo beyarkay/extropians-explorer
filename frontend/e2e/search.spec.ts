@@ -43,9 +43,8 @@ test.describe('Search', () => {
   })
 
   test('clicking a search result navigates to thread', async ({ page }) => {
-    await page.goto('/search?q=bitcoin')
-    await page.waitForTimeout(500)
-
+    await page.goto('/search?q=nanotechnology')
+    await expect(page.locator('.thread-item').first()).toBeVisible()
     await page.locator('.thread-item .subject').first().click()
     await expect(page).toHaveURL(/\/thread\//)
   })
