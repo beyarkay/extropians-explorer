@@ -536,11 +536,21 @@ def map_points():
     with get_db() as db:
         rows = db.execute("""
             SELECT p.message_id, p.x, p.y, p.cluster_id,
-                   m.from_name, m.subject, m.year_month
+                   m.from_name, m.subject, m.year_month,
+                   SUBSTR(m.body, 1, 300) as preview
             FROM projections p
             JOIN messages m ON m.id = p.message_id
             ORDER BY p.message_id
         """).fetchall()
+
+        # Also join tags per message
+        tag_rows = db.execute("""
+            SELECT mt.message_id, mt.tag FROM message_tags mt
+            JOIN projections p ON p.message_id = mt.message_id
+        """).fetchall()
+        tags_by_msg: dict[int, list[str]] = {}
+        for r in tag_rows:
+            tags_by_msg.setdefault(r["message_id"], []).append(r["tag"])
 
         return {
             "points": [
@@ -552,6 +562,8 @@ def map_points():
                     "a": r["from_name"],
                     "s": r["subject"],
                     "m": r["year_month"],
+                    "p": (r["preview"] or "")[:250],
+                    "t": tags_by_msg.get(r["message_id"], []),
                 }
                 for r in rows
             ],
