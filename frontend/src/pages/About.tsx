@@ -40,40 +40,42 @@ export default function About() {
       </P>
 
       <P>
-        This had profound effects on the culture. Messages were <strong>long and carefully composed</strong> — people
-        were writing to an audience of hundreds of technically sophisticated readers who would scrutinize every
-        claim. The convention of <strong>inline quoting</strong> (prefixing quoted text with <code>&gt;</code> characters)
-        allowed for detailed, point-by-point responses where you could interleave your replies with the
-        original text. This made for much more structured arguments than modern social media allows.
+        Messages tended to be long and detailed. The convention of <strong>inline quoting</strong> (prefixing
+        quoted text with <code>&gt;</code> characters) allowed for point-by-point responses, where a
+        reply would interleave new text with excerpts of the original message. This format encouraged
+        structured, multi-part arguments rather than short reactions.
       </P>
 
       <P>
-        The pace was slower than modern platforms — a conversation might unfold over days or weeks — but
-        the depth was extraordinary. A single thread might contain thousands of words of carefully reasoned
-        argument about the feasibility of molecular nanotechnology or the probability of artificial general
-        intelligence. The Extropians list was known for its particularly high signal-to-noise ratio and for
-        the remarkable caliber of its participants.
+        Conversations typically unfolded over days or weeks. A single thread might contain thousands of
+        words across dozens of replies, covering topics like the feasibility
+        of <Link to="/?tag=nanotech">molecular nanotechnology</Link> or
+        the probability of <Link to="/?tag=ai">artificial general intelligence</Link>. The list
+        also saw frequent flame wars and personality clashes.
       </P>
 
       <P>
-        Social norms included a strong commitment to free speech and open debate, willingness to engage with
-        unconventional ideas, and an expectation that claims would be backed by reasoning or evidence. The
-        list had its share of flame wars and personality clashes — these were passionate people with strong
-        opinions — but there was an underlying culture of intellectual seriousness and genuine curiosity
-        about the future.
+        The list's social norms included an emphasis on free speech and open debate, willingness to
+        engage with unconventional ideas, and an expectation that claims would be supported with reasoning
+        or evidence. List members frequently disagreed, sometimes acrimoniously.
       </P>
 
       <P>
-        It's also worth noting that many of these discussions were happening before their subjects became
-        mainstream. People were debating AI alignment in 1999, discussing digital currency in 1998, and
-        arguing about the ethics of genetic enhancement in 1997 — years or decades before these topics
-        entered public discourse.
+        Many topics discussed on the list preceded their entry into mainstream discourse.
+        Participants debated <Link to="/?tag=ai">AI alignment</Link> in 1999,
+        discussed <Link to="/?tag=crypto">digital currency</Link> in 1998,
+        and argued about <Link to="/?tag=biology">genetic enhancement</Link> in 1997.
+        Other recurring topics
+        included <Link to="/?tag=cryonics">cryonics</Link>, <Link to="/?tag=space">space
+        colonization</Link>, <Link to="/?tag=consciousness">consciousness and uploading</Link>,
+        {' '}<Link to="/?tag=economics">libertarian economics</Link>,
+        and <Link to="/?tag=philosophy">existential risk</Link>.
       </P>
 
       <h3 style={{ fontSize: 14, marginBottom: 8, marginTop: 20 }}>Notable Participants</h3>
 
       <P>
-        The list attracted a remarkable concentration of people who would go on to shape major fields:
+        Several participants went on to become prominent in their fields:
       </P>
 
       <ul style={{ marginBottom: 12, paddingLeft: 20 }}>
@@ -134,10 +136,9 @@ export default function About() {
       </ul>
 
       <P>
-        The discussions on this list presaged many of today's most pressing technological and philosophical
-        debates — from AI alignment and existential risk, to cryptocurrency and decentralized systems,
-        to the ethics of human enhancement. Reading through the archives is like watching the intellectual
-        foundations of the 2020s being laid in real time, often by the very people who would later build on them.
+        Many of the topics discussed on this list — AI alignment, existential risk, cryptocurrency,
+        human enhancement — later became subjects of mainstream debate. Several of the people involved
+        went on to found organizations and write books that shaped those debates.
       </P>
 
       <h2 style={{ fontSize: 16, marginBottom: 12, marginTop: 24 }}>About This Website</h2>
