@@ -1,19 +1,14 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
-interface TimelinePoint {
-  month: string
-  count: number
-}
-
+interface TimelinePoint { month: string; count: number }
 interface Stats {
   total_messages: number
   unique_authors: number
   threads: number
   date_range: { start: string; end: string }
 }
-
 interface Thread {
   thread_id: string
   subject: string
@@ -23,12 +18,15 @@ interface Thread {
   participants: string[]
 }
 
+type SortOption = 'replies' | 'date_desc' | 'date_asc' | 'recent_activity'
+
 export default function Timeline() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [timeline, setTimeline] = useState<TimelinePoint[]>([])
   const [threads, setThreads] = useState<Thread[]>([])
   const [totalThreads, setTotalThreads] = useState(0)
   const [page, setPage] = useState(1)
+  const [sort, setSort] = useState<SortOption>('replies')
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedMonth = searchParams.get('month')
   const navigate = useNavigate()
@@ -41,13 +39,14 @@ export default function Timeline() {
   useEffect(() => {
     const params = new URLSearchParams()
     if (selectedMonth) params.set('month', selectedMonth)
+    params.set('sort', sort)
     params.set('page', String(page))
     params.set('per_page', '50')
     fetch(`/api/threads?${params}`).then(r => r.json()).then(data => {
       setThreads(data.threads)
       setTotalThreads(data.total)
     })
-  }, [selectedMonth, page])
+  }, [selectedMonth, sort, page])
 
   const handleBarClick = (data: { month: string }) => {
     setPage(1)
@@ -60,7 +59,7 @@ export default function Timeline() {
 
   const formatDate = (d: string | null) => {
     if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    return new Date(d).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' })
   }
 
   const totalPages = Math.ceil(totalThreads / 50)
@@ -70,67 +69,56 @@ export default function Timeline() {
       {stats && (
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="label">Messages</div>
-            <div className="value">{stats.total_messages.toLocaleString()}</div>
+            <span className="label">msgs</span>
+            <span className="value">{stats.total_messages.toLocaleString()}</span>
           </div>
           <div className="stat-card">
-            <div className="label">Authors</div>
-            <div className="value">{stats.unique_authors.toLocaleString()}</div>
+            <span className="label">authors</span>
+            <span className="value">{stats.unique_authors.toLocaleString()}</span>
           </div>
           <div className="stat-card">
-            <div className="label">Threads</div>
-            <div className="value">{stats.threads.toLocaleString()}</div>
+            <span className="label">threads</span>
+            <span className="value">{stats.threads.toLocaleString()}</span>
           </div>
           <div className="stat-card">
-            <div className="label">Active</div>
-            <div className="value" style={{ fontSize: 18 }}>
-              {stats.date_range.start} — {stats.date_range.end}
-            </div>
+            <span className="label">range</span>
+            <span className="value">{stats.date_range.start} – {stats.date_range.end}</span>
           </div>
         </div>
       )}
 
       <div className="timeline-chart">
         <h2>
-          Message Volume by Month
+          volume
           {selectedMonth && (
-            <span style={{ marginLeft: 12, color: 'var(--accent)', fontSize: 14 }}>
-              Showing: {selectedMonth}
-              <button
-                onClick={() => { setSearchParams({}); setPage(1) }}
-                style={{
-                  marginLeft: 8, background: 'none', border: 'none',
-                  color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 14,
-                }}
-              >
-                ✕ clear
-              </button>
-            </span>
+            <>
+              {' '}— <span style={{ color: 'var(--accent)' }}>{selectedMonth}</span>
+              {' '}
+              <a href="#" onClick={e => { e.preventDefault(); setSearchParams({}); setPage(1) }}
+                style={{ fontSize: 10 }}>[clear]</a>
+            </>
           )}
         </h2>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={140}>
           <BarChart data={timeline} onClick={(e: any) => e?.activePayload && handleBarClick(e.activePayload[0].payload)}>
             <XAxis
               dataKey="month"
-              tick={{ fill: '#6e7681', fontSize: 10 }}
+              tick={{ fill: '#6e7681', fontSize: 9 }}
               tickFormatter={(v: string) => {
                 const [y, m] = v.split('-')
                 return m === '01' ? y : ''
               }}
               interval={0}
             />
-            <YAxis tick={{ fill: '#6e7681', fontSize: 11 }} width={45} />
+            <YAxis tick={{ fill: '#6e7681', fontSize: 9 }} width={30} />
             <Tooltip
-              contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6 }}
+              contentStyle={{ background: '#141419', border: '1px solid #2a2a35', borderRadius: 3, fontSize: 11 }}
               labelStyle={{ color: '#e6edf3' }}
               itemStyle={{ color: '#8b949e' }}
             />
-            <Bar dataKey="count" radius={[2, 2, 0, 0]} cursor="pointer">
+            <Bar dataKey="count" radius={[1, 1, 0, 0]} cursor="pointer">
               {timeline.map((entry) => (
-                <Cell
-                  key={entry.month}
-                  fill={entry.month === selectedMonth ? '#58a6ff' : '#30363d'}
-                />
+                <Cell key={entry.month} fill={entry.month === selectedMonth ? '#58a6ff' : '#2a2a35'} />
               ))}
             </Bar>
           </BarChart>
@@ -139,32 +127,59 @@ export default function Timeline() {
 
       <div className="section-header">
         <h2>
-          {selectedMonth ? `Threads from ${selectedMonth}` : 'Recent Threads'}
+          {selectedMonth ? `threads from ${selectedMonth}` : 'threads'}
           {' '}({totalThreads.toLocaleString()})
         </h2>
+        <div style={{ display: 'flex', gap: 4, fontSize: 10 }}>
+          sort:
+          {(['replies', 'date_desc', 'date_asc', 'recent_activity'] as SortOption[]).map(s => (
+            <a
+              key={s}
+              href="#"
+              onClick={e => { e.preventDefault(); setSort(s); setPage(1) }}
+              style={{ color: sort === s ? 'var(--accent)' : 'var(--text-tertiary)', marginLeft: 4 }}
+            >
+              {s === 'replies' ? 'most replies' : s === 'date_desc' ? 'newest' : s === 'date_asc' ? 'oldest' : 'recent activity'}
+            </a>
+          ))}
+        </div>
       </div>
 
       <div className="thread-list">
-        {threads.map(t => (
-          <div
-            key={t.thread_id}
-            className="thread-item"
-            onClick={() => navigate(`/thread/${encodeURIComponent(t.thread_id)}`)}
-          >
-            <span className="subject">{t.subject || '(no subject)'}</span>
-            <span className="meta">
+        {threads.map(t => {
+          const firstAuthor = t.participants[0] || ''
+          const nParticipants = t.participants.length
+          return (
+            <div
+              key={t.thread_id}
+              className="thread-item"
+              onClick={() => navigate(`/thread/${encodeURIComponent(t.thread_id)}`)}
+            >
               <span className="count">{t.message_count}</span>
-              <span>{formatDate(t.first_date)}</span>
-            </span>
-          </div>
-        ))}
+              <span className="subject">{t.subject || '(no subject)'}</span>
+              <span className="meta">
+                <Link
+                  to={`/author/${encodeURIComponent(firstAuthor)}`}
+                  className="author-name"
+                  onClick={e => e.stopPropagation()}
+                >
+                  {firstAuthor}
+                </Link>
+                {nParticipants > 1 && (
+                  <span style={{ color: 'var(--text-tertiary)' }}>+{nParticipants - 1}</span>
+                )}
+                <span>{formatDate(t.first_date)}</span>
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       {totalPages > 1 && (
         <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
-          <span className="page-info">Page {page} of {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
+          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← prev</button>
+          <span className="page-info">{page}/{totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>next →</button>
         </div>
       )}
     </>
