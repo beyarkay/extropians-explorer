@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { tagColor, tagBg } from '../tagColors'
 
 interface TimelinePoint { month: string; count: number }
 interface Stats {
@@ -282,7 +283,7 @@ export default function Timeline() {
               {t.tags.length > 0 && (
                 <span className="msg-tags" onClick={e => e.stopPropagation()}>
                   {t.tags.map(tag => (
-                    <Link key={tag} to={`/?tag=${tag}`} className="tag">{tag}</Link>
+                    <Link key={tag} to={`/?tag=${tag}`} className="tag" style={{ color: tagColor(tag), background: tagBg(tag) }}>{tag}</Link>
                   ))}
                 </span>
               )}

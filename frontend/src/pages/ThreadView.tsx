@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { linkify } from '../linkify'
+import { tagColor, tagBg } from '../tagColors'
 
 interface Message {
   id: number
@@ -211,7 +212,7 @@ export default function ThreadView() {
                 {m.tags.length > 0 && (
                   <span className="msg-tags" onClick={e => e.stopPropagation()}>
                     {m.tags.map(t => (
-                      <Link key={t} to={`/?tag=${t}`} className="tag">{t}</Link>
+                      <Link key={t} to={`/?tag=${t}`} className="tag" style={{ color: tagColor(t), background: tagBg(t) }}>{t}</Link>
                     ))}
                   </span>
                 )}
