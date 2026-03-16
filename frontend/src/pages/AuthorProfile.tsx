@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { WIKIPEDIA_LINKS } from '../wikipedia'
+import ThreadList from '../components/ThreadList'
 
 interface AuthorData {
   name: string
@@ -10,13 +11,11 @@ interface AuthorData {
   last_post: string
   emails: string
   activity: { month: string; count: number }[]
-  messages: { id: number; date: string; subject: string; thread_id: string }[]
 }
 
 export default function AuthorProfile() {
   const { name } = useParams<{ name: string }>()
   const [author, setAuthor] = useState<AuthorData | null>(null)
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (name) {
@@ -71,7 +70,7 @@ export default function AuthorProfile() {
             />
             <YAxis tick={{ fill: '#6e7681', fontSize: 11 }} width={35} />
             <Tooltip
-              contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6 }}
+              contentStyle={{ background: '#141419', border: '1px solid #2a2a35', borderRadius: 3, fontSize: 11 }}
               labelStyle={{ color: '#e6edf3' }}
               itemStyle={{ color: '#8b949e' }}
             />
@@ -80,24 +79,7 @@ export default function AuthorProfile() {
         </ResponsiveContainer>
       </div>
 
-      <div className="section-header">
-        <h2>Recent Messages (showing {Math.min(100, author.messages.length)})</h2>
-      </div>
-
-      <div className="thread-list">
-        {author.messages.map(m => (
-          <div
-            key={m.id}
-            className="thread-item"
-            onClick={() => navigate(`/thread/${encodeURIComponent(m.thread_id)}`)}
-          >
-            <span className="subject">{m.subject || '(no subject)'}</span>
-            <span className="meta">
-              <span>{formatDate(m.date)}</span>
-            </span>
-          </div>
-        ))}
-      </div>
+      <ThreadList author={name} defaultSort="date_desc" />
     </div>
   )
 }
