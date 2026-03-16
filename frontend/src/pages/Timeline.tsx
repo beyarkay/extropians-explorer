@@ -16,6 +16,7 @@ interface Thread {
   first_date: string
   last_date: string
   participants: string[]
+  tags: string[]
 }
 interface AuthorSuggestion { name: string; post_count: number }
 interface Tag { tag: string; count: number }
@@ -270,6 +271,13 @@ export default function Timeline() {
             >
               <span className="count">{t.message_count}</span>
               <span className="subject">{t.subject || '(no subject)'}</span>
+              {t.tags.length > 0 && (
+                <span className="msg-tags" onClick={e => e.stopPropagation()}>
+                  {t.tags.map(tag => (
+                    <Link key={tag} to={`/?tag=${tag}`} className="tag">{tag}</Link>
+                  ))}
+                </span>
+              )}
               <span className="meta">
                 <Link
                   to={`/author/${encodeURIComponent(firstAuthor)}`}
