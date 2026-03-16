@@ -41,8 +41,14 @@ test.describe('Author page thread relevance', () => {
     await page.locator('.thread-item .subject').first().click()
     await expect(page).toHaveURL(/\/thread\//)
 
-    // Thread view title should match
-    const threadTitle = await page.locator('.section-header h2').first().textContent()
+    // Wait for thread view to render (it has .thread-view with messages)
+    await expect(page.locator('.thread-view')).toBeVisible()
+
+    // The thread title is the section-header h2 that does NOT contain "threads"
+    const headers = await page.locator('.section-header h2').allTextContents()
+    const threadTitle = headers.find(h => !h.includes('threads'))
+    expect(threadTitle).toBeTruthy()
+
     // They should be related (one might have Re: stripped)
     const normalise = (s: string) => s!.replace(/^Re:\s*/i, '').trim().toLowerCase()
     expect(normalise(threadTitle!)).toBe(normalise(listSubject!))
