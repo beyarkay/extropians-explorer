@@ -105,8 +105,8 @@ export default function TopicMap() {
       setLoading(false) // Show canvas after first chunk
 
       if (data.has_more) {
-        // Small delay to let the render happen
-        setTimeout(() => loadChunk(chunk + 1), 50)
+        // Use requestAnimationFrame to let the canvas render between chunks
+        requestAnimationFrame(() => loadChunk(chunk + 1))
       }
     }
     loadChunk(0)
