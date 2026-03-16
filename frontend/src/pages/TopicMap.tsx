@@ -297,7 +297,7 @@ export default function TopicMap() {
   if (loading) return <div className="loading">Loading 132K message embeddings...</div>
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 50px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 50px)', margin: '-8px -16px', padding: '0 8px', overflow: 'hidden' }}>
       {/* Controls bar */}
       <div style={{ display: 'flex', gap: 6, padding: '4px 0', fontSize: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ color: 'var(--text-tertiary)' }}>

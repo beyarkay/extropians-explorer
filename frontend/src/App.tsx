@@ -28,7 +28,7 @@ function App() {
         <h1>Extropians</h1>
         <nav>
           <NavLink to="/" end>Timeline</NavLink>
-          <NavLink to="/map">Map</NavLink>
+          <NavLink to="/map">Embeddings</NavLink>
           <NavLink to="/authors">Authors</NavLink>
           <NavLink to="/domains">Links</NavLink>
           <NavLink to="/glossary">Glossary</NavLink>
