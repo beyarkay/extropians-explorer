@@ -521,6 +521,60 @@ def get_domain(domain: str, page: int = 1, per_page: int = 20):
         }
 
 
+@app.get("/api/map/points")
+def map_points():
+    """Return all projected points for the topic map. Compact binary-friendly JSON."""
+    with get_db() as db:
+        rows = db.execute("""
+            SELECT p.message_id, p.x, p.y, p.cluster_id,
+                   m.from_name, m.subject, m.year_month
+            FROM projections p
+            JOIN messages m ON m.id = p.message_id
+            ORDER BY p.message_id
+        """).fetchall()
+
+        return {
+            "points": [
+                {
+                    "id": r["message_id"],
+                    "x": round(r["x"], 4),
+                    "y": round(r["y"], 4),
+                    "c": r["cluster_id"],
+                    "a": r["from_name"],
+                    "s": r["subject"],
+                    "m": r["year_month"],
+                }
+                for r in rows
+            ],
+        }
+
+
+@app.get("/api/map/clusters")
+def map_clusters():
+    """Return cluster metadata with centroids."""
+    with get_db() as db:
+        clusters = db.execute("SELECT * FROM clusters ORDER BY cluster_id").fetchall()
+        # Compute centroids
+        centroids = db.execute("""
+            SELECT cluster_id, AVG(x) as cx, AVG(y) as cy
+            FROM projections GROUP BY cluster_id
+        """).fetchall()
+        centroid_map = {r["cluster_id"]: (r["cx"], r["cy"]) for r in centroids}
+
+        return [
+            {
+                "id": c["cluster_id"],
+                "label": c["label"],
+                "top_words": c["top_words"],
+                "top_authors": c["top_authors"],
+                "count": c["message_count"],
+                "cx": round(centroid_map.get(c["cluster_id"], (0, 0))[0], 4),
+                "cy": round(centroid_map.get(c["cluster_id"], (0, 0))[1], 4),
+            }
+            for c in clusters
+        ]
+
+
 # Serve frontend
 frontend_dir = Path("frontend/dist")
 if frontend_dir.exists():
