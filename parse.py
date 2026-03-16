@@ -302,10 +302,20 @@ def parse_all():
 
 def build_threads(conn: sqlite3.Connection):
     """Assign thread_id to each message using union-find on references."""
-    # Load all message IDs and their references
+    # Load all message IDs, references, and subjects
     rows = conn.execute(
-        "SELECT id, message_id, in_reply_to, refs FROM messages"
+        "SELECT id, message_id, in_reply_to, refs, subject FROM messages"
     ).fetchall()
+
+    def normalise_subject(s: str) -> str:
+        """Strip Re:/RE:/Fwd: prefixes and whitespace for comparison."""
+        s = re.sub(r"^(Re|RE|Fwd|FWD|Fw):\s*", "", s or "").strip().lower()
+        return s
+
+    # Build subject lookup by message_id
+    subject_of: dict[str, str] = {}
+    for row_id, message_id, _, _, subject in rows:
+        subject_of[message_id] = normalise_subject(subject)
 
     # Union-Find
     parent = {}
@@ -321,26 +331,36 @@ def build_threads(conn: sqlite3.Connection):
         if ra != rb:
             parent[ra] = rb
 
+    def subjects_match(mid_a: str, mid_b: str) -> bool:
+        """Only union messages whose subjects match (after stripping Re:)."""
+        sa = subject_of.get(mid_a, "")
+        sb = subject_of.get(mid_b, "")
+        if not sa or not sb:
+            return True  # If we don't know the subject, allow linking
+        return sa == sb
+
     mid_to_id = {}
-    for row_id, message_id, _, _ in rows:
+    for row_id, message_id, _, _, _ in rows:
         mid_to_id[message_id] = row_id
         parent[message_id] = message_id
 
-    for row_id, message_id, in_reply_to, refs in rows:
+    for row_id, message_id, in_reply_to, refs, subject in rows:
         if in_reply_to:
             irt = in_reply_to.strip("<>")
             if irt not in parent:
                 parent[irt] = irt
-            union(message_id, irt)
+            if subjects_match(message_id, irt):
+                union(message_id, irt)
         if refs:
             ref_ids = re.findall(r"<([^>]+)>", refs)
             for ref in ref_ids:
                 if ref not in parent:
                     parent[ref] = ref
-                union(message_id, ref)
+                if subjects_match(message_id, ref):
+                    union(message_id, ref)
 
     # Assign thread IDs
-    for row_id, message_id, _, _ in rows:
+    for row_id, message_id, _, _, _ in rows:
         thread_id = find(message_id)
         conn.execute("UPDATE messages SET thread_id = ? WHERE id = ?", (thread_id, row_id))
 
