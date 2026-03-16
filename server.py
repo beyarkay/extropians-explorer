@@ -456,6 +456,70 @@ def search(q: str = Query(..., min_length=2), page: int = 1, per_page: int = 50)
         }
 
 
+@app.get("/api/domains")
+def list_domains(page: int = 1, per_page: int = 50, q: str | None = None):
+    offset = (page - 1) * per_page
+    with get_db() as db:
+        where = ""
+        params: list = []
+        if q:
+            where = "WHERE domain LIKE ?"
+            params.append(f"%{q}%")
+
+        total = db.execute(f"SELECT COUNT(*) FROM domains {where}", params).fetchone()[0]
+        rows = db.execute(
+            f"""SELECT domain, url_count, message_count
+                FROM domains {where}
+                ORDER BY url_count DESC
+                LIMIT ? OFFSET ?""",
+            params + [per_page, offset],
+        ).fetchall()
+
+        return {
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "domains": [
+                {"domain": r["domain"], "url_count": r["url_count"], "message_count": r["message_count"]}
+                for r in rows
+            ],
+        }
+
+
+@app.get("/api/domain/{domain:path}")
+def get_domain(domain: str, page: int = 1, per_page: int = 20):
+    offset = (page - 1) * per_page
+    with get_db() as db:
+        total = db.execute("SELECT COUNT(*) FROM urls WHERE domain = ?", (domain,)).fetchone()[0]
+        rows = db.execute(
+            """SELECT u.url, u.snippet, u.message_id, m.from_name, m.date, m.subject
+               FROM urls u
+               JOIN messages m ON m.id = u.message_id
+               WHERE u.domain = ?
+               ORDER BY m.date_epoch DESC
+               LIMIT ? OFFSET ?""",
+            (domain, per_page, offset),
+        ).fetchall()
+
+        return {
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "domain": domain,
+            "urls": [
+                {
+                    "url": r["url"],
+                    "snippet": r["snippet"],
+                    "message_id": r["message_id"],
+                    "from_name": r["from_name"],
+                    "date": r["date"],
+                    "subject": r["subject"],
+                }
+                for r in rows
+            ],
+        }
+
+
 # Serve frontend
 frontend_dir = Path("frontend/dist")
 if frontend_dir.exists():
