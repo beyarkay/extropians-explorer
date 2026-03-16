@@ -12,7 +12,7 @@ interface Cluster {
 }
 
 // Generate distinct colors for clusters using golden ratio hue spacing
-function clusterColor(id: number, total: number): string {
+function clusterColor(id: number, _total?: number): string {
   const hue = (id * 137.508) % 360
   return `hsl(${hue}, 65%, 55%)`
 }
@@ -78,22 +78,6 @@ export default function TopicMap() {
     const dataX = (px - (minX + maxX) / 2) * s + cx
     const dataY = (py - (minY + maxY) / 2) * s + cy
     return { x: dataX, y: dataY }
-  }, [view])
-
-  // Convert canvas coords back to data coords
-  const toData = useCallback((cx: number, cy: number, canvas: HTMLCanvasElement) => {
-    const { minX, maxX, minY, maxY } = boundsRef.current
-    const w = canvas.width
-    const h = canvas.height
-    const padding = 40
-    const scaleX = (w - padding * 2) / (maxX - minX)
-    const scaleY = (h - padding * 2) / (maxY - minY)
-    const s = Math.min(scaleX, scaleY) * view.scale
-    const centerX = w / 2 + view.ox
-    const centerY = h / 2 + view.oy
-    const dx = (cx - centerX) / s + (minX + maxX) / 2
-    const dy = (cy - centerY) / s + (minY + maxY) / 2
-    return { x: dx, y: dy }
   }, [view])
 
   // Draw
@@ -192,8 +176,6 @@ export default function TopicMap() {
     }
 
     // Find nearest point
-    const canvasX = mx * window.devicePixelRatio
-    const canvasY = my * window.devicePixelRatio
     let nearest: Point | null = null
     let minDist = 100 // pixel threshold squared
 
@@ -227,7 +209,7 @@ export default function TopicMap() {
     setDragging(false)
   }, [])
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
+  const handleClick = useCallback((_e: React.MouseEvent) => {
     if (hoveredPoint) {
       navigate(messagePath(hoveredPoint.id))
     }
