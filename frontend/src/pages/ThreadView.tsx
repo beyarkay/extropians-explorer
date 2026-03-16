@@ -25,8 +25,7 @@ export default function ThreadView() {
         .then(r => r.json())
         .then((msgs: Message[]) => {
           setMessages(msgs)
-          // Expand all by default if <= 10 messages, otherwise just the first
-          if (msgs.length <= 10) {
+          if (msgs.length <= 15) {
             setExpanded(new Set(msgs.map(m => m.id)))
           } else if (msgs.length > 0) {
             setExpanded(new Set([msgs[0].id]))
@@ -35,108 +34,75 @@ export default function ThreadView() {
     }
   }, [threadId])
 
-  // Load votes from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('extropians-votes')
     if (stored) setVotes(JSON.parse(stored))
   }, [])
 
-  const saveVotes = (newVotes: Record<number, number>) => {
-    setVotes(newVotes)
-    localStorage.setItem('extropians-votes', JSON.stringify(newVotes))
+  const saveVotes = (v: Record<number, number>) => {
+    setVotes(v)
+    localStorage.setItem('extropians-votes', JSON.stringify(v))
   }
 
   const vote = (id: number, delta: number) => {
-    const current = votes[id] || 0
-    // If clicking same direction, toggle off
-    const newVal = current === delta ? 0 : delta
-    saveVotes({ ...votes, [id]: newVal })
+    const cur = votes[id] || 0
+    saveVotes({ ...votes, [id]: cur === delta ? 0 : delta })
   }
 
-  const toggleExpand = (id: number) => {
+  const toggle = (id: number) => {
     setExpanded(prev => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(id)) next.delete(id); else next.add(id)
       return next
     })
   }
 
-  const expandAll = () => setExpanded(new Set(messages.map(m => m.id)))
-  const collapseAll = () => setExpanded(new Set())
-
   const formatDate = (d: string | null) => {
     if (!d) return ''
     return new Date(d).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit',
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
     })
   }
 
-  if (!messages.length) return <div className="loading">Loading thread...</div>
+  if (!messages.length) return <div className="loading">Loading...</div>
 
   const subject = messages[0]?.subject || '(no subject)'
 
   return (
     <>
-      <Link to="/" className="back-link">← Back</Link>
+      <Link to="/" className="back-link">← back</Link>
 
       <div className="section-header">
-        <h2 style={{ fontSize: 20 }}>{subject}</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={expandAll} style={{
-            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-            color: 'var(--text-secondary)', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12,
-          }}>Expand All</button>
-          <button onClick={collapseAll} style={{
-            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-            color: 'var(--text-secondary)', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12,
-          }}>Collapse All</button>
+        <h2 style={{ fontSize: 13, textTransform: 'none', letterSpacing: 0 }}>{subject}</h2>
+        <div style={{ display: 'flex', gap: 4, fontSize: 10 }}>
+          <span style={{ color: 'var(--text-tertiary)' }}>{messages.length} messages</span>
+          {' | '}
+          <a href="#" onClick={e => { e.preventDefault(); setExpanded(new Set(messages.map(m => m.id))) }}>expand all</a>
+          {' | '}
+          <a href="#" onClick={e => { e.preventDefault(); setExpanded(new Set()) }}>collapse all</a>
         </div>
       </div>
 
       <div className="thread-view">
         {messages.map(m => {
-          const voteVal = votes[m.id] || 0
+          const v = votes[m.id] || 0
           return (
             <div key={m.id} className="thread-message">
-              <div className="msg-header" onClick={() => toggleExpand(m.id)}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, marginRight: 4 }}
-                  onClick={e => e.stopPropagation()}>
-                  <button
-                    onClick={() => vote(m.id, 1)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 14,
-                      color: voteVal === 1 ? 'var(--green)' : 'var(--text-tertiary)',
-                    }}
-                    title="Upvote"
-                  >▲</button>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 11,
-                    color: voteVal > 0 ? 'var(--green)' : voteVal < 0 ? 'var(--red)' : 'var(--text-tertiary)',
-                  }}>{voteVal}</span>
-                  <button
-                    onClick={() => vote(m.id, -1)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 14,
-                      color: voteVal === -1 ? 'var(--red)' : 'var(--text-tertiary)',
-                    }}
-                    title="Downvote"
-                  >▼</button>
-                </div>
-                <Link
-                  to={`/author/${encodeURIComponent(m.from_name)}`}
-                  className="author"
-                  onClick={e => e.stopPropagation()}
-                >
+              <div className="msg-header" onClick={() => toggle(m.id)}>
+                <span className="vote-controls" onClick={e => e.stopPropagation()}>
+                  <button className={v === 1 ? 'upvoted' : ''} onClick={() => vote(m.id, 1)}>▲</button>
+                  <span className="vote-score" style={{ color: v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : undefined }}>{v}</span>
+                  <button className={v === -1 ? 'downvoted' : ''} onClick={() => vote(m.id, -1)}>▼</button>
+                </span>
+                <Link to={`/author/${encodeURIComponent(m.from_name)}`} className="author" onClick={e => e.stopPropagation()}>
                   {m.from_name}
                 </Link>
-                <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>
-                  {m.subject !== subject ? m.subject : ''}
-                </span>
+                {m.subject !== subject && (
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{m.subject}</span>
+                )}
                 <span className="date">{formatDate(m.date)}</span>
-                <span style={{ color: 'var(--text-tertiary)', fontSize: 12, marginLeft: 8 }}>
-                  {expanded.has(m.id) ? '▾' : '▸'}
+                <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
+                  {expanded.has(m.id) ? '[-]' : '[+]'}
                 </span>
               </div>
               {expanded.has(m.id) && (
