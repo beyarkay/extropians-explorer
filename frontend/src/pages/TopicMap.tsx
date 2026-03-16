@@ -252,8 +252,21 @@ export default function TopicMap() {
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
     const factor = e.deltaY > 0 ? 0.9 : 1.1
-    setView(v => ({ ...v, scale: Math.max(0.1, Math.min(50, v.scale * factor)) }))
+    // Zoom toward the mouse cursor position
+    const mx = (e.clientX - rect.left) * window.devicePixelRatio
+    const my = (e.clientY - rect.top) * window.devicePixelRatio
+    setView(v => {
+      const newScale = Math.max(0.1, Math.min(50, v.scale * factor))
+      const cx = rect.width * window.devicePixelRatio / 2 + v.ox
+      const cy = rect.height * window.devicePixelRatio / 2 + v.oy
+      // Adjust offset so the point under the cursor stays fixed
+      const newOx = v.ox - (mx - cx) * (factor - 1)
+      const newOy = v.oy - (my - cy) * (factor - 1)
+      return { ox: newOx, oy: newOy, scale: newScale }
+    })
   }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
