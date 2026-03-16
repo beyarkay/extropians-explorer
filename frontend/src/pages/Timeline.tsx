@@ -46,10 +46,18 @@ export default function Timeline() {
   const [selectedTag, setSelectedTag] = useState<string | null>(searchParams.get('tag'))
 
   useEffect(() => {
-    fetch('/api/stats').then(r => r.json()).then(setStats)
-    fetch('/api/timeline').then(r => r.json()).then(setTimeline)
     fetch('/api/tags').then(r => r.json()).then(setAllTags)
   }, [])
+
+  // Filtered stats and timeline
+  useEffect(() => {
+    const filterParams = new URLSearchParams()
+    for (const p of participants) filterParams.append('participants', p)
+    if (selectedTag) filterParams.set('tag', selectedTag)
+    const qs = filterParams.toString()
+    fetch(`/api/stats${qs ? '?' + qs : ''}`).then(r => r.json()).then(setStats)
+    fetch(`/api/timeline${qs ? '?' + qs : ''}`).then(r => r.json()).then(setTimeline)
+  }, [participants, selectedTag])
 
   useEffect(() => {
     const params = new URLSearchParams()
