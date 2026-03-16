@@ -6,16 +6,17 @@ test.describe('Filtering', () => {
   })
 
   test('tag dropdown filters threads', async ({ page }) => {
+    // Wait for initial data to load
+    await expect(page.locator('.stat-card .value').first()).toBeVisible()
+
     const select = page.locator('.filter-bar select')
     await select.selectOption('ai')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
-    // Thread count header should mention "tagged"
-    // Stats should update to show fewer messages
     const msgsText = await page.locator('.stat-card .value').first().textContent()
     const msgs = parseInt(msgsText!.replace(/,/g, ''))
     expect(msgs).toBeGreaterThan(0)
-    expect(msgs).toBeLessThan(132000) // filtered, not all
+    expect(msgs).toBeLessThan(132000)
   })
 
   test('tag filter updates timeline chart', async ({ page }) => {
@@ -73,15 +74,17 @@ test.describe('Filtering', () => {
   })
 
   test('participant chip removal restores results', async ({ page }) => {
+    await expect(page.locator('.stat-card .value').first()).toBeVisible()
+
     const input = page.locator('.filter-bar input[placeholder="filter by participant..."]')
     await input.fill('Sandberg')
     await page.waitForTimeout(300)
     await page.locator('text=Anders Sandberg').first().click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
-    // Remove the chip
-    await page.locator('.filter-bar').getByText('x').click()
-    await page.waitForTimeout(500)
+    // Remove the chip — click the 'x' link inside the chip span
+    await page.locator('.filter-bar span:has-text("Anders Sandberg") a').click()
+    await page.waitForTimeout(1000)
 
     // Should be back to unfiltered count
     const msgsText = await page.locator('.stat-card .value').first().textContent()

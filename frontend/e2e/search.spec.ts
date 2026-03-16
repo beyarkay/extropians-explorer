@@ -46,7 +46,7 @@ test.describe('Search', () => {
     await page.goto('/search?q=bitcoin')
     await page.waitForTimeout(500)
 
-    await page.locator('.thread-item').first().click()
+    await page.locator('.thread-item .subject').first().click()
     await expect(page).toHaveURL(/\/thread\//)
   })
 

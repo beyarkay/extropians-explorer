@@ -32,7 +32,9 @@ test.describe('Authors Page', () => {
 
   test('notable authors have Wikipedia links', async ({ page }) => {
     await page.goto('/authors')
+    await expect(page.locator('.author-item').first()).toBeVisible()
     const wikiLinks = page.locator('.wiki-link')
+    await expect(wikiLinks.first()).toBeVisible()
     const count = await wikiLinks.count()
     expect(count).toBeGreaterThan(5) // We have ~20 notable authors
   })

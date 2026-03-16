@@ -25,12 +25,12 @@ test.describe('Message View', () => {
 
   test('navigation bar shows prev/next links', async ({ page }) => {
     await page.goto(MSG_URL)
-    await page.waitForTimeout(300)
+    await page.waitForLoadState('networkidle')
 
-    await expect(page.getByText('← prev msg')).toBeVisible()
-    await expect(page.getByText('next msg →')).toBeVisible()
-    await expect(page.getByText('← prev in thread')).toBeVisible()
-    await expect(page.getByText('next in thread →')).toBeVisible()
+    await expect(page.getByText('← prev msg').first()).toBeVisible()
+    await expect(page.getByText('next msg →').first()).toBeVisible()
+    await expect(page.getByText('← prev in thread').first()).toBeVisible()
+    await expect(page.getByText('next in thread →').first()).toBeVisible()
   })
 
   test('full thread link works', async ({ page }) => {

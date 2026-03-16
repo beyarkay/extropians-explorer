@@ -3,11 +3,12 @@ import { test, expect } from '@playwright/test'
 test.describe('About Page', () => {
   test('loads and shows content sections', async ({ page }) => {
     await page.goto('/about')
+    await page.waitForLoadState('networkidle')
 
-    await expect(page.getByText('The Extropians Mailing List')).toBeVisible()
-    await expect(page.getByText('Context: Mailing Lists')).toBeVisible()
-    await expect(page.getByText('Notable Participants')).toBeVisible()
-    await expect(page.getByText('About This Website')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'The Extropians Mailing List' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Context.*Mailing Lists/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Notable Participants' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'About This Website' })).toBeVisible()
   })
 
   test('shows live stats from the database', async ({ page }) => {

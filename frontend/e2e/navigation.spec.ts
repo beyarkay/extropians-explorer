@@ -70,7 +70,8 @@ test.describe('SPA Routing', () => {
 
   test('direct URL to about works', async ({ page }) => {
     await page.goto('/about')
-    await expect(page.getByText('The Extropians Mailing List')).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByRole('heading', { name: 'The Extropians Mailing List' })).toBeVisible()
   })
 
   test('browser back/forward works', async ({ page }) => {
