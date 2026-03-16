@@ -8,6 +8,7 @@ import SearchResults from './pages/SearchResults'
 import MessageView from './pages/MessageView'
 import About from './pages/About'
 import Glossary from './pages/Glossary'
+import Domains from './pages/Domains'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -27,6 +28,7 @@ function App() {
         <nav>
           <NavLink to="/" end>Timeline</NavLink>
           <NavLink to="/authors">Authors</NavLink>
+          <NavLink to="/domains">Links</NavLink>
           <NavLink to="/glossary">Glossary</NavLink>
           <NavLink to="/about">About</NavLink>
         </nav>
@@ -48,6 +50,7 @@ function App() {
           <Route path="/thread/:threadId" element={<ThreadView />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/message/:id" element={<MessageView />} />
+          <Route path="/domains" element={<Domains />} />
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/about" element={<About />} />
         </Routes>
