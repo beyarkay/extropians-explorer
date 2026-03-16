@@ -40,6 +40,15 @@ def stats():
         }
 
 
+@app.get("/api/tags")
+def list_tags():
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT tag, COUNT(*) as count FROM message_tags GROUP BY tag ORDER BY count DESC"
+        ).fetchall()
+        return [{"tag": r["tag"], "count": r["count"]} for r in rows]
+
+
 @app.get("/api/timeline")
 def timeline():
     with get_db() as db:
@@ -58,6 +67,7 @@ def list_threads(
     month: str | None = None,
     author: str | None = None,
     participants: list[str] = Query(default=[]),
+    tag: str | None = None,
     sort: str = "replies",
     page: int = 1,
     per_page: int = 50,
@@ -78,6 +88,13 @@ def list_threads(
         for p in participants:
             where.append("participants LIKE ?")
             params.append(f"%{p}%")
+        if tag:
+            where.append("""thread_id IN (
+                SELECT DISTINCT m.thread_id FROM messages m
+                JOIN message_tags mt ON mt.message_id = m.id
+                WHERE mt.tag = ?
+            )""")
+            params.append(tag)
 
         where_clause = f"WHERE {' AND '.join(where)}" if where else ""
 
@@ -176,6 +193,21 @@ def get_thread(thread_id: str):
                ORDER BY date_epoch ASC""",
             (thread_id,),
         ).fetchall()
+
+        # Get tags for all messages in thread
+        msg_ids = [m["id"] for m in messages]
+        if msg_ids:
+            placeholders = ",".join("?" * len(msg_ids))
+            tag_rows = db.execute(
+                f"SELECT message_id, tag FROM message_tags WHERE message_id IN ({placeholders})",
+                msg_ids,
+            ).fetchall()
+            tags_by_msg: dict[int, list[str]] = {}
+            for r in tag_rows:
+                tags_by_msg.setdefault(r["message_id"], []).append(r["tag"])
+        else:
+            tags_by_msg = {}
+
         return [
             {
                 "id": m["id"],
@@ -186,6 +218,7 @@ def get_thread(thread_id: str):
                 "subject": m["subject"],
                 "body": m["body"],
                 "in_reply_to": m["in_reply_to"],
+                "tags": tags_by_msg.get(m["id"], []),
             }
             for m in messages
         ]
