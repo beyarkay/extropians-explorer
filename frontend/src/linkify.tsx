@@ -58,7 +58,8 @@ export function renderBody(text: string, messageDate?: string): ReactNode[] {
 
   for (const line of lines) {
     if (line.trimStart().startsWith('>')) {
-      quoteBlock.push(line)
+      // Strip leading '>' markers for display (the styled block provides the visual cue)
+      quoteBlock.push(line.replace(/^(\s*>)+\s?/, ''))
     } else {
       flushQuote()
       result.push(<div key={`l-${result.length}`}>{linkifyLine(line, messageDate)}</div>)
