@@ -73,6 +73,7 @@ export default function TopicMap() {
   const [view, setView] = useState({ ox: 0, oy: 0, scale: 1 })
   const [dragging, setDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, ox: 0, oy: 0 })
+  const didDragRef = useRef(false)
   const boundsRef = useRef({ minX: 0, maxX: 1, minY: 0, maxY: 1 })
 
   useEffect(() => {
@@ -230,6 +231,7 @@ export default function TopicMap() {
     setMousePos({ x: e.clientX, y: e.clientY })
 
     if (dragging) {
+      didDragRef.current = true
       setView(v => ({
         ...v,
         ox: dragStart.ox + (mx - dragStart.x) * window.devicePixelRatio,
@@ -272,6 +274,7 @@ export default function TopicMap() {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect()
     if (!rect) return
+    didDragRef.current = false
     setDragging(true)
     setDragStart({ x: e.clientX - rect.left, y: e.clientY - rect.top, ox: view.ox, oy: view.oy })
   }, [view])
@@ -279,6 +282,7 @@ export default function TopicMap() {
   const handleMouseUp = useCallback(() => { setDragging(false) }, [])
 
   const handleClick = useCallback(() => {
+    if (didDragRef.current) return // Don't navigate if we just dragged
     if (hoveredPoint) navigate(messagePath(hoveredPoint.id))
   }, [hoveredPoint, navigate])
 
