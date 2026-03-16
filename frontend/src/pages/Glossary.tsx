@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GLOSSARY, type GlossaryEntry } from '../glossary'
+import { GLOSSARY } from '../glossary'
 import { tagColor, tagBg } from '../tagColors'
 import { Link } from 'react-router-dom'
 
