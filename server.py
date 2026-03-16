@@ -90,6 +90,15 @@ def list_tags():
         return [{"tag": r["tag"], "count": r["count"]} for r in rows]
 
 
+@app.get("/api/clusters")
+def list_clusters():
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT cluster_id, label, message_count FROM clusters ORDER BY message_count DESC"
+        ).fetchall()
+        return [{"id": r["cluster_id"], "label": r["label"], "count": r["message_count"]} for r in rows]
+
+
 @app.get("/api/timeline")
 def timeline(
     tag: str | None = None,
@@ -114,6 +123,7 @@ def list_threads(
     author: str | None = None,
     participants: list[str] = Query(default=[]),
     tag: str | None = None,
+    cluster: int | None = None,
     sort: str = "replies",
     page: int = 1,
     per_page: int = 50,
@@ -141,6 +151,13 @@ def list_threads(
                 WHERE mt.tag = ?
             )""")
             params.append(tag)
+        if cluster is not None:
+            where.append("""thread_id IN (
+                SELECT DISTINCT m.thread_id FROM messages m
+                JOIN projections p ON p.message_id = m.id
+                WHERE p.cluster_id = ?
+            )""")
+            params.append(cluster)
 
         where_clause = f"WHERE {' AND '.join(where)}" if where else ""
 
@@ -256,19 +273,24 @@ def get_thread(thread_id: str):
             (thread_id,),
         ).fetchall()
 
-        # Get tags for all messages in thread
+        # Get tags and clusters for all messages in thread
         msg_ids = [m["id"] for m in messages]
+        tags_by_msg: dict[int, list[str]] = {}
+        cluster_by_msg: dict[int, int | None] = {}
         if msg_ids:
             placeholders = ",".join("?" * len(msg_ids))
             tag_rows = db.execute(
                 f"SELECT message_id, tag FROM message_tags WHERE message_id IN ({placeholders})",
                 msg_ids,
             ).fetchall()
-            tags_by_msg: dict[int, list[str]] = {}
             for r in tag_rows:
                 tags_by_msg.setdefault(r["message_id"], []).append(r["tag"])
-        else:
-            tags_by_msg = {}
+            cluster_rows = db.execute(
+                f"SELECT message_id, cluster_id FROM projections WHERE message_id IN ({placeholders})",
+                msg_ids,
+            ).fetchall()
+            for r in cluster_rows:
+                cluster_by_msg[r["message_id"]] = r["cluster_id"]
 
         return [
             {
@@ -281,6 +303,7 @@ def get_thread(thread_id: str):
                 "body": m["body"],
                 "in_reply_to": m["in_reply_to"],
                 "tags": tags_by_msg.get(m["id"], []),
+                "cluster_id": cluster_by_msg.get(m["id"]),
             }
             for m in messages
         ]
