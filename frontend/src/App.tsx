@@ -5,6 +5,7 @@ import Authors from './pages/Authors'
 import AuthorProfile from './pages/AuthorProfile'
 import ThreadView from './pages/ThreadView'
 import SearchResults from './pages/SearchResults'
+import MessageView from './pages/MessageView'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -42,6 +43,7 @@ function App() {
           <Route path="/author/:name" element={<AuthorProfile />} />
           <Route path="/thread/:threadId" element={<ThreadView />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/message/:id" element={<MessageView />} />
         </Routes>
       </div>
     </div>

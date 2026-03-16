@@ -101,6 +101,11 @@ export default function ThreadView() {
                   <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{m.subject}</span>
                 )}
                 <span className="date">{formatDate(m.date)}</span>
+                <Link
+                  to={`/message/${m.id}`}
+                  onClick={e => e.stopPropagation()}
+                  style={{ color: 'var(--text-tertiary)', fontSize: 10 }}
+                >#</Link>
                 <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
                   {expanded.has(m.id) ? '[-]' : '[+]'}
                 </span>
