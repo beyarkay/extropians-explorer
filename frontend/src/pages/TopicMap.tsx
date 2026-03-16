@@ -83,6 +83,7 @@ export default function TopicMap() {
 
     // Load points in chunks, rendering progressively
     let accumulated: Point[] = []
+    let boundsSet = false
     const loadChunk = async (chunk: number) => {
       const res = await fetch(`/api/map/points?chunk=${chunk}`)
       const data = await res.json()
@@ -90,8 +91,10 @@ export default function TopicMap() {
       setAllPoints([...accumulated])
       setTotalPointCount(data.total)
 
-      // Update bounds from all points so far
-      if (accumulated.length > 0) {
+      // Fix bounds from the first chunk only — prevents view jumping as more data loads
+      if (!boundsSet && accumulated.length > 0) {
+        boundsSet = true
+        // Use a generous padding so later points mostly fit
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
         for (const p of accumulated) {
           if (p.x < minX) minX = p.x
@@ -99,13 +102,14 @@ export default function TopicMap() {
           if (p.y < minY) minY = p.y
           if (p.y > maxY) maxY = p.y
         }
-        boundsRef.current = { minX, maxX, minY, maxY }
+        const padX = (maxX - minX) * 0.5
+        const padY = (maxY - minY) * 0.5
+        boundsRef.current = { minX: minX - padX, maxX: maxX + padX, minY: minY - padY, maxY: maxY + padY }
       }
 
-      setLoading(false) // Show canvas after first chunk
+      setLoading(false)
 
       if (data.has_more) {
-        // Use requestAnimationFrame to let the canvas render between chunks
         requestAnimationFrame(() => loadChunk(chunk + 1))
       }
     }
