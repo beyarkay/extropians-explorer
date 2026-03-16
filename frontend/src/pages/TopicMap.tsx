@@ -48,6 +48,7 @@ type ColorMode = 'cluster' | 'year' | 'author' | 'tag'
 
 export default function TopicMap() {
   const [allPoints, setAllPoints] = useState<Point[]>([])
+  const [totalPointCount, setTotalPointCount] = useState(0)
   const [clusters, setClusters] = useState<Cluster[]>([])
   const [colorMode, setColorMode] = useState<ColorMode>('cluster')
   const [hoveredPoint, setHoveredPoint] = useState<Point | null>(null)
@@ -77,20 +78,38 @@ export default function TopicMap() {
   const boundsRef = useRef({ minX: 0, maxX: 1, minY: 0, maxY: 1 })
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/map/points').then(r => r.json()),
-      fetch('/api/map/clusters').then(r => r.json()),
-    ]).then(([pointsData, clustersData]) => {
-      setAllPoints(pointsData.points)
-      setClusters(clustersData)
-      const xs = pointsData.points.map((p: Point) => p.x)
-      const ys = pointsData.points.map((p: Point) => p.y)
-      boundsRef.current = {
-        minX: Math.min(...xs), maxX: Math.max(...xs),
-        minY: Math.min(...ys), maxY: Math.max(...ys),
+    // Load clusters immediately
+    fetch('/api/map/clusters').then(r => r.json()).then(setClusters)
+
+    // Load points in chunks, rendering progressively
+    let accumulated: Point[] = []
+    const loadChunk = async (chunk: number) => {
+      const res = await fetch(`/api/map/points?chunk=${chunk}`)
+      const data = await res.json()
+      accumulated = [...accumulated, ...data.points]
+      setAllPoints([...accumulated])
+      setTotalPointCount(data.total)
+
+      // Update bounds from all points so far
+      if (accumulated.length > 0) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+        for (const p of accumulated) {
+          if (p.x < minX) minX = p.x
+          if (p.x > maxX) maxX = p.x
+          if (p.y < minY) minY = p.y
+          if (p.y > maxY) maxY = p.y
+        }
+        boundsRef.current = { minX, maxX, minY, maxY }
       }
-      setLoading(false)
-    })
+
+      setLoading(false) // Show canvas after first chunk
+
+      if (data.has_more) {
+        // Small delay to let the render happen
+        setTimeout(() => loadChunk(chunk + 1), 50)
+      }
+    }
+    loadChunk(0)
   }, [])
 
   // Autocomplete
@@ -298,7 +317,7 @@ export default function TopicMap() {
     return w.length > words ? w.slice(0, words).join(' ') + '...' : text
   }
 
-  if (loading) return <div className="loading">Loading 132K message embeddings...</div>
+  if (loading) return <div className="loading">Loading message embeddings...</div>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 50px)', margin: '-8px -16px', padding: '0 8px', overflow: 'hidden' }}>
@@ -306,6 +325,9 @@ export default function TopicMap() {
       <div style={{ display: 'flex', gap: 6, padding: '4px 0', fontSize: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ color: 'var(--text-tertiary)' }}>
           {points.length.toLocaleString()}{isFiltered ? ` / ${allPoints.length.toLocaleString()}` : ''} msgs
+          {totalPointCount > 0 && allPoints.length < totalPointCount && (
+            <span style={{ color: 'var(--yellow)' }}> (loading {Math.round(allPoints.length / totalPointCount * 100)}%)</span>
+          )}
         </span>
         <span style={{ color: 'var(--border)' }}>|</span>
 
