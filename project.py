@@ -16,8 +16,8 @@ from tqdm import tqdm
 
 DB_PATH = "extropians.db"
 N_CLUSTERS = 75
-UMAP_NEIGHBORS = 15
-UMAP_MIN_DIST = 0.1
+UMAP_NEIGHBORS = 100
+UMAP_MIN_DIST = 0.5
 
 
 def unpack_embedding(blob: bytes) -> np.ndarray:
