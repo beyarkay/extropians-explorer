@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { WIKIPEDIA_LINKS } from '../wikipedia'
+import { AUTHOR_LINKS } from '../wikipedia'
 import { formatDateMonthOnly } from '../utils/format'
 import { authorPath } from '../utils/routes'
 import Pagination from '../components/Pagination'
@@ -38,7 +38,7 @@ export default function Authors() {
 
       <div className="author-list">
         {authors.map((a, i) => {
-          const wiki = WIKIPEDIA_LINKS[a.name]
+          const links = AUTHOR_LINKS[a.name]
           return (
             <div
               key={a.name}
@@ -48,17 +48,13 @@ export default function Authors() {
               <span className="rank">{(page - 1) * perPage + i + 1}</span>
               <span className="name">
                 {a.name}
-                {wiki && (
-                  <a
-                    className="wiki-link"
-                    href={wiki}
-                    target="_blank"
-                    rel="noopener"
-                    onClick={e => e.stopPropagation()}
-                    style={{ marginLeft: 8 }}
-                  >
-                    Wikipedia ↗
-                  </a>
+                {links?.wikipedia && (
+                  <a className="wiki-link" href={links.wikipedia} target="_blank" rel="noopener"
+                    onClick={e => e.stopPropagation()} style={{ marginLeft: 8 }}>W ↗</a>
+                )}
+                {links?.url && (
+                  <a className="wiki-link" href={links.url} target="_blank" rel="noopener"
+                    onClick={e => e.stopPropagation()} style={{ marginLeft: 4 }}>web ↗</a>
                 )}
               </span>
               <span className="date-range">{formatDateMonthOnly(a.first_post)} – {formatDateMonthOnly(a.last_post)}</span>

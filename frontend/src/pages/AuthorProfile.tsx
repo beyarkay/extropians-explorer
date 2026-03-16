@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { WIKIPEDIA_LINKS } from '../wikipedia'
+import { AUTHOR_LINKS } from '../wikipedia'
 import { formatDate } from '../utils/format'
 import ThreadList from '../components/ThreadList'
 import ActivityChart from '../components/ActivityChart'
@@ -28,7 +28,7 @@ export default function AuthorProfile() {
 
   if (!author) return <div className="loading">Loading...</div>
 
-  const wiki = WIKIPEDIA_LINKS[author.name]
+  const links = AUTHOR_LINKS[author.name]
 
   return (
     <div className="author-profile">
@@ -38,9 +38,14 @@ export default function AuthorProfile() {
         <div>
           <h2>
             {author.name}
-            {wiki && (
-              <a href={wiki} target="_blank" rel="noopener" style={{ marginLeft: 12, fontSize: 14 }}>
+            {links?.wikipedia && (
+              <a href={links.wikipedia} target="_blank" rel="noopener" style={{ marginLeft: 12, fontSize: 12 }}>
                 Wikipedia ↗
+              </a>
+            )}
+            {links?.url && (
+              <a href={links.url} target="_blank" rel="noopener" style={{ marginLeft: 8, fontSize: 12 }}>
+                web ↗
               </a>
             )}
           </h2>
