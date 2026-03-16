@@ -212,13 +212,11 @@ AUTHOR_ALIASES = {
     "Jones, Spike": "Spike Jones",
     # Robert Coyote
     "[ Robert-Coyote ]": "Robert Coyote",
-    # Randy Smith
-    "Randy S": "Randy Smith",
-    "Randy": "Randy Smith",
+    # Randy S / Cryofan (NOT Randy Smith — different person)
+    "Randy S": "Randy S",
+    "Randy": "Randy S",
     # CurtAdams
     "Curtadams": "Curt Adams",
-    # Mark Grant
-    "Mark": "Mark Grant",
     # Corbally
     "Corbally": "J Corbally",
     "Foxleap Creations": "J Corbally",
