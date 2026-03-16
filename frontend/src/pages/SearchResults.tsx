@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
+import { formatDate } from '../utils/format'
+import { threadPath } from '../utils/routes'
+import Pagination from '../components/Pagination'
 
 interface SearchResult {
   id: number
@@ -32,13 +35,7 @@ export default function SearchResults() {
       .catch(() => setLoading(false))
   }, [query, page])
 
-  // Reset page when query changes
   useEffect(() => { setPage(1) }, [query])
-
-  const formatDate = (d: string | null) => {
-    if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-  }
 
   const totalPages = Math.ceil(total / 50)
 
@@ -57,7 +54,7 @@ export default function SearchResults() {
           <div
             key={r.id}
             className="thread-item result-item"
-            onClick={() => navigate(`/thread/${encodeURIComponent(r.thread_id)}`)}
+            onClick={() => navigate(threadPath(r.thread_id))}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
               <span className="subject">{r.subject || '(no subject)'}</span>
@@ -71,13 +68,7 @@ export default function SearchResults() {
         ))}
       </div>
 
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
-          <span className="page-info">Page {page} of {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
-        </div>
-      )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </>
   )
 }

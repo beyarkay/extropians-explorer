@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { WIKIPEDIA_LINKS } from '../wikipedia'
+import { formatDateMonthOnly } from '../utils/format'
+import { authorPath } from '../utils/routes'
+import Pagination from '../components/Pagination'
 
 interface Author {
   name: string
@@ -25,11 +28,6 @@ export default function Authors() {
       })
   }, [page])
 
-  const formatDate = (d: string | null) => {
-    if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
-  }
-
   const totalPages = Math.ceil(total / perPage)
 
   return (
@@ -45,7 +43,7 @@ export default function Authors() {
             <div
               key={a.name}
               className="author-item"
-              onClick={() => navigate(`/author/${encodeURIComponent(a.name)}`)}
+              onClick={() => navigate(authorPath(a.name))}
             >
               <span className="rank">{(page - 1) * perPage + i + 1}</span>
               <span className="name">
@@ -63,20 +61,14 @@ export default function Authors() {
                   </a>
                 )}
               </span>
-              <span className="date-range">{formatDate(a.first_post)} – {formatDate(a.last_post)}</span>
+              <span className="date-range">{formatDateMonthOnly(a.first_post)} – {formatDateMonthOnly(a.last_post)}</span>
               <span className="post-count">{a.post_count.toLocaleString()}</span>
             </div>
           )
         })}
       </div>
 
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
-          <span className="page-info">Page {page} of {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
-        </div>
-      )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </>
   )
 }

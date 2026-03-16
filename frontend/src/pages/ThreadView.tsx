@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { linkify } from '../linkify'
 import { tagColor, tagBg } from '../tagColors'
+import { formatDateWithTime } from '../utils/format'
+import { authorPath, messagePath } from '../utils/routes'
 
 interface Message {
   id: number
@@ -123,12 +125,7 @@ export default function ThreadView() {
   const tree = useMemo(() => buildTree(messages), [messages])
   const flat = useMemo(() => flattenTree(tree), [tree])
 
-  const formatDate = (d: string | null) => {
-    if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-    })
-  }
+  const formatDate = formatDateWithTime
 
   if (!messages.length) return <div className="loading">Loading...</div>
 
@@ -212,7 +209,7 @@ export default function ThreadView() {
                 <span style={{ color: 'var(--text-tertiary)', fontSize: 10, cursor: 'pointer' }}>
                   {isCollapsed ? `[+${nChildren}]` : '[-]'}
                 </span>
-                <Link to={`/author/${encodeURIComponent(m.from_name)}`} className="author" onClick={e => e.stopPropagation()}>
+                <Link to={authorPath(m.from_name)} className="author" onClick={e => e.stopPropagation()}>
                   {m.from_name}
                 </Link>
                 <span style={{ color: 'var(--text-secondary)', fontSize: 10, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -227,7 +224,7 @@ export default function ThreadView() {
                   </span>
                 )}
                 <Link
-                  to={`/message/${m.id}`}
+                  to={messagePath(m.id)}
                   onClick={e => e.stopPropagation()}
                   style={{ color: 'var(--text-tertiary)', fontSize: 10 }}
                 >#</Link>
