@@ -352,7 +352,11 @@ def build_threads(conn: sqlite3.Connection):
         INSERT INTO threads (thread_id, subject, message_count, first_date, last_date, participants)
         SELECT
             thread_id,
-            (SELECT subject FROM messages m2 WHERE m2.thread_id = m.thread_id ORDER BY date_epoch ASC LIMIT 1),
+            (SELECT subject FROM messages m2 WHERE m2.thread_id = m.thread_id
+             ORDER BY
+               CASE WHEN subject LIKE 'Re:%' OR subject LIKE 'RE:%' THEN 1 ELSE 0 END,
+               date_epoch ASC
+             LIMIT 1),
             COUNT(*),
             MIN(date),
             MAX(date),
