@@ -492,7 +492,7 @@ def get_domain(domain: str, page: int = 1, per_page: int = 20):
     with get_db() as db:
         total = db.execute("SELECT COUNT(*) FROM urls WHERE domain = ?", (domain,)).fetchone()[0]
         rows = db.execute(
-            """SELECT u.url, u.snippet, u.message_id, m.from_name, m.date, m.subject
+            """SELECT u.url, u.snippet, u.message_id, m.from_name, m.date, m.subject, m.thread_id
                FROM urls u
                JOIN messages m ON m.id = u.message_id
                WHERE u.domain = ?
@@ -514,6 +514,7 @@ def get_domain(domain: str, page: int = 1, per_page: int = 20):
                     "from_name": r["from_name"],
                     "date": r["date"],
                     "subject": r["subject"],
+                    "thread_id": r["thread_id"],
                 }
                 for r in rows
             ],

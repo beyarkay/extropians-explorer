@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { formatDate } from '../utils/format'
-import { messagePath } from '../utils/routes'
+import { messagePath, authorPath, threadPath } from '../utils/routes'
 import Pagination from '../components/Pagination'
 
 interface Domain {
@@ -17,6 +17,7 @@ interface DomainUrl {
   from_name: string
   date: string
   subject: string
+  thread_id: string
 }
 
 export default function Domains() {
@@ -125,18 +126,24 @@ export default function Domains() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {urls.map((u, i) => (
-                  <div
+                  <Link
                     key={i}
+                    to={messagePath(u.message_id)}
                     style={{
                       padding: '6px 8px',
                       borderBottom: '1px solid var(--border)',
                       fontSize: 11,
+                      display: 'block',
+                      textDecoration: 'none',
+                      color: 'inherit',
                     }}
+                    className="thread-item"
                   >
                     <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 2 }}>
-                      <Link to={messagePath(u.message_id)} style={{ fontSize: 10, flexShrink: 0 }}>#</Link>
-                      <span style={{ color: 'var(--accent)', fontSize: 10 }}>{u.from_name}</span>
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{u.subject}</span>
+                      <Link to={authorPath(u.from_name)} onClick={e => e.stopPropagation()} style={{ color: 'var(--accent)', fontSize: 10 }}>{u.from_name}</Link>
+                      <Link to={threadPath(u.thread_id)} onClick={e => e.stopPropagation()} style={{ color: 'var(--text-secondary)', fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {u.subject}
+                      </Link>
                       <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 'auto', flexShrink: 0 }}>
                         {formatDate(u.date)}
                       </span>
@@ -147,7 +154,7 @@ export default function Domains() {
                     }}>
                       {u.snippet}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
