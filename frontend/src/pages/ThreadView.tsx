@@ -132,7 +132,10 @@ export default function ThreadView() {
 
   if (!messages.length) return <div className="loading">Loading...</div>
 
-  const subject = messages[0]?.subject || '(no subject)'
+  // Use the tree root's subject as the thread title
+  const rootSubject = tree[0]?.message.subject || messages[0]?.subject || '(no subject)'
+  // Strip "Re: " for the canonical thread title
+  const threadTitle = rootSubject.replace(/^Re:\s*/i, '')
 
   // Find which messages should be hidden because an ancestor is collapsed
   const hiddenIds = new Set<number>()
@@ -180,7 +183,7 @@ export default function ThreadView() {
       <Link to="/" className="back-link">← back</Link>
 
       <div className="section-header">
-        <h2 style={{ fontSize: 13, textTransform: 'none', letterSpacing: 0 }}>{subject}</h2>
+        <h2 style={{ fontSize: 13, textTransform: 'none', letterSpacing: 0 }}>{threadTitle}</h2>
         <div style={{ display: 'flex', gap: 4, fontSize: 10 }}>
           <span style={{ color: 'var(--text-tertiary)' }}>{messages.length} messages</span>
           {' | '}
@@ -212,9 +215,9 @@ export default function ThreadView() {
                 <Link to={`/author/${encodeURIComponent(m.from_name)}`} className="author" onClick={e => e.stopPropagation()}>
                   {m.from_name}
                 </Link>
-                {m.subject !== subject && m.subject.replace(/^Re:\s*/i, '') !== subject.replace(/^Re:\s*/i, '') && (
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{m.subject}</span>
-                )}
+                <span style={{ color: 'var(--text-secondary)', fontSize: 10, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {m.subject || '(no subject)'}
+                </span>
                 <span className="date">{formatDate(m.date)}</span>
                 {m.tags.length > 0 && (
                   <span className="msg-tags" onClick={e => e.stopPropagation()}>
