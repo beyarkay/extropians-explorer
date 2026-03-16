@@ -23,15 +23,56 @@ def get_db():
         conn.close()
 
 
+def _build_message_filter(
+    tag: str | None = None,
+    participants: list[str] | None = None,
+):
+    """Build WHERE clause and params for filtering messages."""
+    where = ["year_month IS NOT NULL"]
+    params: list[str] = []
+    joins = ""
+
+    if tag:
+        joins += " JOIN message_tags mt ON mt.message_id = m.id"
+        where.append("mt.tag = ?")
+        params.append(tag)
+    if participants:
+        for p in participants:
+            where.append("m.thread_id IN (SELECT thread_id FROM messages WHERE from_name = ?)")
+            params.append(p)
+
+    return joins, " AND ".join(where), params
+
+
 @app.get("/api/stats")
-def stats():
+def stats(
+    tag: str | None = None,
+    participants: list[str] = Query(default=[]),
+):
     with get_db() as db:
-        total = db.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
-        authors = db.execute("SELECT COUNT(*) FROM authors").fetchone()[0]
-        threads = db.execute("SELECT COUNT(*) FROM threads").fetchone()[0]
-        date_range = db.execute(
-            "SELECT MIN(year_month), MAX(year_month) FROM messages WHERE year_month IS NOT NULL"
-        ).fetchone()
+        if not tag and not participants:
+            # Fast path: no filters
+            total = db.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
+            authors = db.execute("SELECT COUNT(*) FROM authors").fetchone()[0]
+            threads = db.execute("SELECT COUNT(*) FROM threads").fetchone()[0]
+            date_range = db.execute(
+                "SELECT MIN(year_month), MAX(year_month) FROM messages WHERE year_month IS NOT NULL"
+            ).fetchone()
+        else:
+            joins, where_clause, params = _build_message_filter(tag, participants or None)
+            total = db.execute(
+                f"SELECT COUNT(*) FROM messages m{joins} WHERE {where_clause}", params
+            ).fetchone()[0]
+            authors = db.execute(
+                f"SELECT COUNT(DISTINCT from_name) FROM messages m{joins} WHERE {where_clause}", params
+            ).fetchone()[0]
+            threads = db.execute(
+                f"SELECT COUNT(DISTINCT thread_id) FROM messages m{joins} WHERE {where_clause}", params
+            ).fetchone()[0]
+            date_range = db.execute(
+                f"SELECT MIN(year_month), MAX(year_month) FROM messages m{joins} WHERE {where_clause}", params
+            ).fetchone()
+
         return {
             "total_messages": total,
             "unique_authors": authors,
@@ -50,14 +91,19 @@ def list_tags():
 
 
 @app.get("/api/timeline")
-def timeline():
+def timeline(
+    tag: str | None = None,
+    participants: list[str] = Query(default=[]),
+):
     with get_db() as db:
+        joins, where_clause, params = _build_message_filter(tag, participants or None)
         rows = db.execute(
-            """SELECT year_month, COUNT(*) as count
-               FROM messages
-               WHERE year_month IS NOT NULL
-               GROUP BY year_month
-               ORDER BY year_month"""
+            f"""SELECT year_month, COUNT(*) as count
+                FROM messages m{joins}
+                WHERE {where_clause}
+                GROUP BY year_month
+                ORDER BY year_month""",
+            params,
         ).fetchall()
         return [{"month": r["year_month"], "count": r["count"]} for r in rows]
 
