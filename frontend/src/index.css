@@ -412,6 +412,16 @@ mark {
   background: rgba(88, 166, 255, 0.1);
 }
 
+/* ── Glossary terms ── */
+.glossary-term {
+  border-bottom: 1px dotted var(--text-tertiary);
+  cursor: help;
+}
+.glossary-term:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── Pagination ── */
 .pagination {
   display: flex;
