@@ -21,19 +21,35 @@ interface TreeNode {
 }
 
 function buildTree(messages: Message[]): TreeNode[] {
+  if (messages.length === 0) return []
+
   const byMsgId = new Map<string, Message>()
   for (const m of messages) byMsgId.set(m.message_id, m)
 
   const childrenOf = new Map<string, Message[]>()
-  const roots: Message[] = []
+  const root = messages[0] // First message chronologically is always the root
+  const assignedAsChild = new Set<number>()
 
+  // First pass: link messages with explicit in_reply_to
   for (const m of messages) {
+    if (m.id === root.id) continue
     if (m.in_reply_to && byMsgId.has(m.in_reply_to)) {
       const kids = childrenOf.get(m.in_reply_to) || []
       kids.push(m)
       childrenOf.set(m.in_reply_to, kids)
-    } else {
-      roots.push(m)
+      assignedAsChild.add(m.id)
+    }
+  }
+
+  // Second pass: orphan messages (no valid in_reply_to) become children
+  // of the root. This handles the common case where old email clients
+  // didn't set In-Reply-To headers.
+  for (const m of messages) {
+    if (m.id === root.id) continue
+    if (!assignedAsChild.has(m.id)) {
+      const kids = childrenOf.get(root.message_id) || []
+      kids.push(m)
+      childrenOf.set(root.message_id, kids)
     }
   }
 
@@ -46,7 +62,7 @@ function buildTree(messages: Message[]): TreeNode[] {
     }
   }
 
-  return roots.map(r => expand(r, 0))
+  return [expand(root, 0)]
 }
 
 function flattenTree(nodes: TreeNode[]): TreeNode[] {
