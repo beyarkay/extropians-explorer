@@ -554,7 +554,7 @@ def get_domain(domain: str, page: int = 1, per_page: int = 20):
 
 
 @app.get("/api/map/points")
-def map_points(chunk: int = 0, chunk_size: int = 1000):
+def map_points(chunk: int = 0, chunk_size: int = 5000):
     """Return projected points in chunks for progressive loading."""
     offset = chunk * chunk_size
     with get_db() as db:
