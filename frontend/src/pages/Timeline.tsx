@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import ThreadList from '../components/ThreadList'
+import ActivityChart from '../components/ActivityChart'
 
 interface TimelinePoint { month: string; count: number }
 interface Stats {
@@ -97,43 +97,19 @@ export default function Timeline() {
         </div>
       )}
 
-      <div className="timeline-chart">
-        <h2>
-          volume
-          {selectedMonth && (
-            <>
-              {' '}— <span style={{ color: 'var(--accent)' }}>{selectedMonth}</span>
-              {' '}
-              <a href="#" onClick={e => { e.preventDefault(); setSearchParams({}) }}
-                style={{ fontSize: 10 }}>[clear]</a>
-            </>
-          )}
-        </h2>
-        <ResponsiveContainer width="100%" height={140}>
-          <BarChart data={timeline} onClick={(e: any) => e?.activePayload && handleBarClick(e.activePayload[0].payload)}>
-            <XAxis
-              dataKey="month"
-              tick={{ fill: '#6e7681', fontSize: 9 }}
-              tickFormatter={(v: string) => {
-                const [y, m] = v.split('-')
-                return m === '01' ? y : ''
-              }}
-              interval={0}
-            />
-            <YAxis tick={{ fill: '#6e7681', fontSize: 9 }} width={30} />
-            <Tooltip
-              contentStyle={{ background: '#141419', border: '1px solid #2a2a35', borderRadius: 3, fontSize: 11 }}
-              labelStyle={{ color: '#e6edf3' }}
-              itemStyle={{ color: '#8b949e' }}
-            />
-            <Bar dataKey="count" radius={[1, 1, 0, 0]} cursor="pointer">
-              {timeline.map((entry) => (
-                <Cell key={entry.month} fill={entry.month === selectedMonth ? '#58a6ff' : '#2a2a35'} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <ActivityChart
+        data={timeline}
+        selectedMonth={selectedMonth}
+        onBarClick={handleBarClick}
+        title={selectedMonth
+          ? `volume — ${selectedMonth} `
+          : 'volume'
+        }
+      />
+      {selectedMonth && (
+        <a href="#" onClick={e => { e.preventDefault(); setSearchParams({}) }}
+          style={{ fontSize: 10, marginTop: -6, display: 'inline-block' }}>[clear month filter]</a>
+      )}
 
       {/* Filters */}
       <div className="filter-bar">

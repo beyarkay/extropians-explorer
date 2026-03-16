@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { tagColor, tagBg } from '../tagColors'
+import { formatDateShort } from '../utils/format'
+import { authorPath, threadPath } from '../utils/routes'
+import Pagination from './Pagination'
 
 interface Thread {
   thread_id: string
@@ -15,14 +18,11 @@ interface Thread {
 type SortOption = 'replies' | 'date_desc' | 'date_asc' | 'recent_activity'
 
 interface Props {
-  /** Pre-applied filters */
   author?: string
   participants?: string[]
   tag?: string | null
   month?: string | null
-  /** Hide the sort controls */
   hideSort?: boolean
-  /** Default sort */
   defaultSort?: SortOption
 }
 
@@ -49,11 +49,6 @@ export default function ThreadList({ author, participants, tag, month, hideSort,
       setTotal(data.total)
     })
   }, [author, tag, month, sort, page, JSON.stringify(participants)])
-
-  const formatDate = (d: string | null) => {
-    if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' })
-  }
 
   const totalPages = Math.ceil(total / 50)
 
@@ -86,7 +81,7 @@ export default function ThreadList({ author, participants, tag, month, hideSort,
             <div
               key={t.thread_id}
               className="thread-item"
-              onClick={() => navigate(`/thread/${encodeURIComponent(t.thread_id)}`)}
+              onClick={() => navigate(threadPath(t.thread_id))}
             >
               <span className="count">{t.message_count}</span>
               <span className="subject">{t.subject || '(no subject)'}</span>
@@ -98,30 +93,20 @@ export default function ThreadList({ author, participants, tag, month, hideSort,
                 </span>
               )}
               <span className="meta">
-                <Link
-                  to={`/author/${encodeURIComponent(firstAuthor)}`}
-                  className="author-name"
-                  onClick={e => e.stopPropagation()}
-                >
+                <Link to={authorPath(firstAuthor)} className="author-name" onClick={e => e.stopPropagation()}>
                   {firstAuthor}
                 </Link>
                 {nParticipants > 1 && (
                   <span style={{ color: 'var(--text-tertiary)' }}>+{nParticipants - 1}</span>
                 )}
-                <span>{formatDate(t.first_date)}</span>
+                <span>{formatDateShort(t.first_date)}</span>
               </span>
             </div>
           )
         })}
       </div>
 
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← prev</button>
-          <span className="page-info">{page}/{totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>next →</button>
-        </div>
-      )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </>
   )
 }
