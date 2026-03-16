@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { renderBody } from '../linkify'
 
 interface MessageData {
@@ -22,7 +22,6 @@ interface MessageData {
 export default function MessageView() {
   const { id } = useParams<{ id: string }>()
   const [msg, setMsg] = useState<MessageData | null>(null)
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (id) {
