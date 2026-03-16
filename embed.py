@@ -45,9 +45,21 @@ def init_embeddings_table(conn: sqlite3.Connection):
     conn.commit()
 
 
+_enc = None
+def _get_enc():
+    global _enc
+    if _enc is None:
+        _enc = tiktoken.encoding_for_model(MODEL)
+    return _enc
+
 def format_message(row) -> str:
-    """Format a message for embedding."""
-    return f"From: {row['from_name']}\nSubject: {row['subject']}\n\n{row['body'] or ''}"
+    """Format a message for embedding, truncating to MAX_TOKENS if needed."""
+    text = f"From: {row['from_name']}\nSubject: {row['subject']}\n\n{row['body'] or ''}"
+    enc = _get_enc()
+    tokens = enc.encode(text)
+    if len(tokens) > MAX_TOKENS:
+        text = enc.decode(tokens[:MAX_TOKENS])
+    return text
 
 
 def pack_embedding(vec: list[float]) -> bytes:
