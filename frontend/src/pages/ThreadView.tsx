@@ -28,7 +28,15 @@ function buildTree(messages: Message[]): TreeNode[] {
   for (const m of messages) byMsgId.set(m.message_id, m)
 
   const childrenOf = new Map<string, Message[]>()
-  const root = messages[0] // First message chronologically is always the root
+
+  // Find the root: prefer messages that no other message replies to,
+  // or messages without "Re:" in subject, falling back to first chronologically
+  const repliedTo = new Set(messages.map(m => m.in_reply_to).filter(Boolean))
+  const candidates = messages.filter(m => !m.in_reply_to || !byMsgId.has(m.in_reply_to))
+  const root = candidates.find(m => !m.subject.match(/^re:/i))
+    || candidates[0]
+    || messages[0]
+
   const assignedAsChild = new Set<number>()
 
   // First pass: link messages with explicit in_reply_to
