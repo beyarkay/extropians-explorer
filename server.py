@@ -57,6 +57,7 @@ def timeline():
 def list_threads(
     month: str | None = None,
     author: str | None = None,
+    sort: str = "replies",
     page: int = 1,
     per_page: int = 50,
 ):
@@ -76,6 +77,14 @@ def list_threads(
 
         where_clause = f"WHERE {' AND '.join(where)}" if where else ""
 
+        sort_map = {
+            "replies": "message_count DESC",
+            "date_asc": "first_date ASC",
+            "date_desc": "first_date DESC",
+            "recent_activity": "last_date DESC",
+        }
+        order = sort_map.get(sort, "message_count DESC")
+
         total = db.execute(
             f"SELECT COUNT(*) FROM threads {where_clause}", params
         ).fetchone()[0]
@@ -83,7 +92,7 @@ def list_threads(
         rows = db.execute(
             f"""SELECT thread_id, subject, message_count, first_date, last_date, participants
                 FROM threads {where_clause}
-                ORDER BY first_date DESC
+                ORDER BY {order}
                 LIMIT ? OFFSET ?""",
             params + [per_page, offset],
         ).fetchall()
@@ -100,6 +109,52 @@ def list_threads(
                     "first_date": r["first_date"],
                     "last_date": r["last_date"],
                     "participants": r["participants"].split(",") if r["participants"] else [],
+                }
+                for r in rows
+            ],
+        }
+
+
+@app.get("/api/messages")
+def list_messages(
+    month: str | None = None,
+    author: str | None = None,
+    page: int = 1,
+    per_page: int = 50,
+):
+    """Get individual messages (not grouped by thread)."""
+    offset = (page - 1) * per_page
+    with get_db() as db:
+        where = []
+        params = []
+        if month:
+            where.append("year_month = ?")
+            params.append(month)
+        if author:
+            where.append("from_name = ?")
+            params.append(author)
+        where_clause = f"WHERE {' AND '.join(where)}" if where else ""
+
+        total = db.execute(f"SELECT COUNT(*) FROM messages {where_clause}", params).fetchone()[0]
+        rows = db.execute(
+            f"""SELECT id, date, from_name, subject, thread_id, year_month
+                FROM messages {where_clause}
+                ORDER BY date_epoch ASC
+                LIMIT ? OFFSET ?""",
+            params + [per_page, offset],
+        ).fetchall()
+
+        return {
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "messages": [
+                {
+                    "id": r["id"],
+                    "date": r["date"],
+                    "from_name": r["from_name"],
+                    "subject": r["subject"],
+                    "thread_id": r["thread_id"],
                 }
                 for r in rows
             ],
