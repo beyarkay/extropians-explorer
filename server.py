@@ -118,6 +118,21 @@ def list_threads(
             params + [per_page, offset],
         ).fetchall()
 
+        # Get tags for each thread
+        thread_ids = [r["thread_id"] for r in rows]
+        thread_tags: dict[str, list[str]] = {}
+        if thread_ids:
+            placeholders = ",".join("?" * len(thread_ids))
+            tag_rows = db.execute(
+                f"""SELECT DISTINCT m.thread_id, mt.tag
+                    FROM message_tags mt
+                    JOIN messages m ON m.id = mt.message_id
+                    WHERE m.thread_id IN ({placeholders})""",
+                thread_ids,
+            ).fetchall()
+            for tr in tag_rows:
+                thread_tags.setdefault(tr["thread_id"], []).append(tr["tag"])
+
         return {
             "total": total,
             "page": page,
@@ -130,6 +145,7 @@ def list_threads(
                     "first_date": r["first_date"],
                     "last_date": r["last_date"],
                     "participants": r["participants"].split(",") if r["participants"] else [],
+                    "tags": sorted(set(thread_tags.get(r["thread_id"], []))),
                 }
                 for r in rows
             ],
