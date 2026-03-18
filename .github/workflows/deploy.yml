@@ -68,7 +68,7 @@ jobs:
       - name: Health check
         run: |
           for i in $(seq 1 12); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://extropians.boydkane.com/api/stats 2>/dev/null || echo "000")
+            STATUS=$(curl -sL -o /dev/null -w "%{http_code}" https://extropians.boydkane.com/api/stats 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Health check passed!"
               exit 0
