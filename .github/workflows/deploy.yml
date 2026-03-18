@@ -58,8 +58,7 @@ jobs:
             --archive \
             --verbose \
             --compress \
-            --exclude={.git,node_modules,.venv,__pycache__,data,test-results,'*.db-wal','*.db-shm',frontend/src,frontend/e2e,.claude,.env} \
-            --include="frontend/dist/***" \
+            --exclude={.git,node_modules,.venv,__pycache__,data,test-results,'*.db','*.db-wal','*.db-shm',frontend/src,frontend/e2e,.claude,.env} \
             ./ \
             brk@172.235.173.145:~/extropians/
 
