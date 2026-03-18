@@ -54,7 +54,7 @@ function processLine(text: string, messageDate?: string): ReactNode[] {
         <span key={`u${i}`} className="linked-url">
           <a href={part} target="_blank" rel="noopener noreferrer">{part}</a>
           <a
-            href={`https://web.archive.org/web/${toWaybackDate(messageDate)}*/${part}`}
+            href={`https://web.archive.org/web/${toWaybackDate(messageDate)}/${part}`}
             target="_blank"
             rel="noopener noreferrer"
             className="wayback-link"
