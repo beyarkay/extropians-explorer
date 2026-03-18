@@ -143,8 +143,14 @@ export default function ThreadView() {
 
   // Use the tree root's subject as the thread title
   const rootSubject = tree[0]?.message.subject || messages[0]?.subject || '(no subject)'
-  // Strip "Re: " for the canonical thread title
   const threadTitle = rootSubject.replace(/^Re:\s*/i, '')
+
+  // Participants sorted by message count
+  const participants = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const m of messages) counts.set(m.from_name, (counts.get(m.from_name) || 0) + 1)
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])
+  }, [messages])
 
   // Find which messages should be hidden because an ancestor is collapsed
   const hiddenIds = new Set<number>()
@@ -200,6 +206,16 @@ export default function ThreadView() {
           {' | '}
           <a href="#" onClick={e => { e.preventDefault(); setCollapsed(new Set(messages.map(m => m.id))) }}>collapse all</a>
         </div>
+      </div>
+      <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginBottom: 4 }}>
+        participants:{' '}
+        {participants.map(([name, count], i) => (
+          <span key={name}>
+            {i > 0 && ', '}
+            <Link to={authorPath(name)} style={{ color: 'var(--text-secondary)' }}>{name}</Link>
+            {count > 1 && <span> ({count})</span>}
+          </span>
+        ))}
       </div>
 
       <div className="thread-view">
