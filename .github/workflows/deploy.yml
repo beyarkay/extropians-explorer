@@ -1,0 +1,82 @@
+name: Deploy Extropians
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install and build frontend
+        run: cd frontend && pnpm install --frozen-lockfile && pnpm exec tsc -b && pnpm run build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 172.235.173.145 >> ~/.ssh/known_hosts
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Build frontend
+        run: cd frontend && pnpm install --frozen-lockfile && pnpm run build
+
+      - name: Sync to VM
+        run: |
+          rsync \
+            --archive \
+            --verbose \
+            --compress \
+            --exclude={.git,node_modules,.venv,__pycache__,data,test-results,'*.db-wal','*.db-shm',frontend/src,frontend/e2e,.claude,.env} \
+            --include="frontend/dist/***" \
+            ./ \
+            brk@172.235.173.145:~/extropians/
+
+      - name: Start server
+        run: ssh brk@172.235.173.145 'bash ~/extropians/deploy/start.sh'
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://extropians.boydkane.com/api/stats 2>/dev/null || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed!"
+              exit 0
+            fi
+            echo "Attempt $i/12: status=$STATUS, retrying in 5s..."
+            sleep 5
+          done
+          echo "Health check FAILED"
+          ssh brk@172.235.173.145 'tail -30 ~/extropians/extropians.log'
+          exit 1
