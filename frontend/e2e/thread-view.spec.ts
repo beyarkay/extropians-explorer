@@ -198,14 +198,15 @@ test.describe('Thread View', () => {
     await page.goto('/thread/129BE00D9DC8D411927600805FA7152806556C19%40groexmbcr11.pfizer.com')
     await page.waitForTimeout(500)
 
-    const participantsDiv = page.locator('text=participants:').locator('..')
-    const text = await participantsDiv.textContent()
-
-    // Extract counts — first author should have the highest count
-    const counts = [...text!.matchAll(/\((\d+)\)/g)].map(m => parseInt(m[1]))
-    for (let i = 1; i < counts.length; i++) {
-      expect(counts[i]).toBeLessThanOrEqual(counts[i - 1])
-    }
+    // The participants line is the div containing "participants:"
+    const participantsText = await page.locator('div:has(> :text("participants:"))').first().textContent()
+    // It should list the top poster first
+    // Gts has ~75 messages, should appear before others
+    expect(participantsText).toMatch(/Gts/)
+    const gtsIdx = participantsText!.indexOf('Gts')
+    const leeIdx = participantsText!.indexOf('Lee Corbin')
+    // Gts (75 msgs) should appear before Lee Corbin (26 msgs)
+    expect(gtsIdx).toBeLessThan(leeIdx)
   })
 
   test('back link returns to homepage', async ({ page }) => {

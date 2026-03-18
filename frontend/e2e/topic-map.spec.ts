@@ -14,10 +14,10 @@ test.describe('Topic Map / Embeddings Page', () => {
 
   test('shows color mode toggles', async ({ page }) => {
     await page.goto('/map')
-    await expect(page.getByText('cluster')).toBeVisible()
-    await expect(page.getByText('year')).toBeVisible()
-    await expect(page.getByText('author')).toBeVisible()
-    await expect(page.getByText('tag')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'cluster', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'year', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'author', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'tag', exact: true })).toBeVisible()
   })
 
   test('cluster filter dropdown has options', async ({ page }) => {
