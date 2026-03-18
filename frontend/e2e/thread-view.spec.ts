@@ -172,6 +172,42 @@ test.describe('Thread View', () => {
     expect(count).toBeGreaterThanOrEqual(0)
   })
 
+  test('shows participants list with message counts', async ({ page }) => {
+    // Use a thread with multiple participants and varied counts
+    await page.goto('/thread/129BE00D9DC8D411927600805FA7152806556C19%40groexmbcr11.pfizer.com')
+    await page.waitForTimeout(500)
+
+    // Should show "participants:" text
+    await expect(page.getByText('participants:')).toBeVisible()
+
+    // Top poster (Gts) should appear first
+    const participantsDiv = page.locator('text=participants:').locator('..')
+    const text = await participantsDiv.textContent()
+    expect(text).toContain('Gts')
+
+    // Should show counts in parentheses for authors with >1 message
+    expect(text).toMatch(/\(\d+\)/)
+
+    // Participant names should be links to author profiles
+    const authorLinks = participantsDiv.locator('a[href*="/author/"]')
+    const count = await authorLinks.count()
+    expect(count).toBeGreaterThan(3)
+  })
+
+  test('participants are sorted by message count', async ({ page }) => {
+    await page.goto('/thread/129BE00D9DC8D411927600805FA7152806556C19%40groexmbcr11.pfizer.com')
+    await page.waitForTimeout(500)
+
+    const participantsDiv = page.locator('text=participants:').locator('..')
+    const text = await participantsDiv.textContent()
+
+    // Extract counts — first author should have the highest count
+    const counts = [...text!.matchAll(/\((\d+)\)/g)].map(m => parseInt(m[1]))
+    for (let i = 1; i < counts.length; i++) {
+      expect(counts[i]).toBeLessThanOrEqual(counts[i - 1])
+    }
+  })
+
   test('back link returns to homepage', async ({ page }) => {
     await page.goto(THREAD_URL)
     await page.locator('.back-link').click()
