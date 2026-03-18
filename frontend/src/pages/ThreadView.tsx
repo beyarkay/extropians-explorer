@@ -137,6 +137,13 @@ export default function ThreadView() {
   const tree = useMemo(() => buildTree(messages), [messages])
   const flat = useMemo(() => flattenTree(tree), [tree])
 
+  // Participants sorted by message count
+  const participants = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const m of messages) counts.set(m.from_name, (counts.get(m.from_name) || 0) + 1)
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])
+  }, [messages])
+
   const formatDate = formatDateWithTime
 
   if (!messages.length) return <div className="loading">Loading...</div>
@@ -144,13 +151,6 @@ export default function ThreadView() {
   // Use the tree root's subject as the thread title
   const rootSubject = tree[0]?.message.subject || messages[0]?.subject || '(no subject)'
   const threadTitle = rootSubject.replace(/^Re:\s*/i, '')
-
-  // Participants sorted by message count
-  const participants = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const m of messages) counts.set(m.from_name, (counts.get(m.from_name) || 0) + 1)
-    return [...counts.entries()].sort((a, b) => b[1] - a[1])
-  }, [messages])
 
   // Find which messages should be hidden because an ancestor is collapsed
   const hiddenIds = new Set<number>()
