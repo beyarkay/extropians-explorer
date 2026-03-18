@@ -5,12 +5,13 @@ test.describe('Filtering', () => {
     await page.goto('/')
   })
 
+  // Helper: get the topic select (the one with "all topics" option)
+  const topicSelect = (page: any) => page.locator('.filter-bar select:has(option[value="ai"])')
+
   test('tag dropdown filters threads', async ({ page }) => {
-    // Wait for initial data to load
     await expect(page.locator('.stat-card .value').first()).toBeVisible()
 
-    const select = page.locator('.filter-bar select')
-    await select.selectOption('ai')
+    await topicSelect(page).selectOption('ai')
     await page.waitForTimeout(1000)
 
     const msgsText = await page.locator('.stat-card .value').first().textContent()
@@ -20,11 +21,10 @@ test.describe('Filtering', () => {
   })
 
   test('tag filter updates timeline chart', async ({ page }) => {
-    // Get initial chart data by checking stats
     const initialMsgs = await page.locator('.stat-card .value').first().textContent()
 
-    await page.locator('.filter-bar select').selectOption('cryonics')
-    await page.waitForTimeout(500)
+    await topicSelect(page).selectOption('cryonics')
+    await page.waitForTimeout(1000)
 
     const filteredMsgs = await page.locator('.stat-card .value').first().textContent()
     expect(parseInt(filteredMsgs!.replace(/,/g, ''))).toBeLessThan(parseInt(initialMsgs!.replace(/,/g, '')))
@@ -35,22 +35,18 @@ test.describe('Filtering', () => {
     await input.fill('Yudkow')
     await page.waitForTimeout(300)
 
-    // Autocomplete dropdown should appear
     const suggestion = page.locator('text=Eliezer Yudkowsky').first()
     await expect(suggestion).toBeVisible()
     await suggestion.click()
 
-    // Should show participant chip
     await expect(page.locator('.filter-bar').getByText('Eliezer Yudkowsky')).toBeVisible()
 
-    // Threads should be filtered
     await page.waitForTimeout(500)
     const threadCount = await page.locator('.section-header h2').last().textContent()
     expect(threadCount).toBeTruthy()
   })
 
   test('multiple participant filters narrow results', async ({ page }) => {
-    // Add first participant
     const input = page.locator('.filter-bar input[placeholder="filter by participant..."]')
     await input.fill('Yudkow')
     await page.waitForTimeout(300)
@@ -60,7 +56,6 @@ test.describe('Filtering', () => {
     const afterFirst = await page.locator('.section-header h2').last().textContent()
     const countAfterFirst = parseInt(afterFirst!.match(/(\d[\d,]*)/)?.[1]?.replace(/,/g, '') || '0')
 
-    // Add second participant
     await input.fill('Robin Han')
     await page.waitForTimeout(300)
     await page.locator('text=Robin Hanson').first().click()
@@ -69,7 +64,6 @@ test.describe('Filtering', () => {
     const afterSecond = await page.locator('.section-header h2').last().textContent()
     const countAfterSecond = parseInt(afterSecond!.match(/(\d[\d,]*)/)?.[1]?.replace(/,/g, '') || '0')
 
-    // Adding a second participant should further narrow results
     expect(countAfterSecond).toBeLessThanOrEqual(countAfterFirst)
   })
 
@@ -82,23 +76,19 @@ test.describe('Filtering', () => {
     await page.locator('text=Anders Sandberg').first().click()
     await page.waitForTimeout(1000)
 
-    // Remove the chip — click the 'x' link inside the chip span
     await page.locator('.filter-bar span:has-text("Anders Sandberg") a').click()
     await page.waitForTimeout(1000)
 
-    // Should be back to unfiltered count
     const msgsText = await page.locator('.stat-card .value').first().textContent()
     expect(parseInt(msgsText!.replace(/,/g, ''))).toBeGreaterThan(100000)
   })
 
   test('tag + participant filters combine', async ({ page }) => {
-    // Set tag filter
-    await page.locator('.filter-bar select').selectOption('ai')
-    await page.waitForTimeout(500)
+    await topicSelect(page).selectOption('ai')
+    await page.waitForTimeout(1000)
     const afterTag = await page.locator('.section-header h2').last().textContent()
     const countTag = parseInt(afterTag!.match(/(\d[\d,]*)/)?.[1]?.replace(/,/g, '') || '0')
 
-    // Add participant
     const input = page.locator('.filter-bar input[placeholder="filter by participant..."]')
     await input.fill('Yudkow')
     await page.waitForTimeout(300)
@@ -114,9 +104,9 @@ test.describe('Filtering', () => {
 
   test('tag from URL param is pre-selected', async ({ page }) => {
     await page.goto('/?tag=crypto')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
-    const select = page.locator('.filter-bar select')
+    const select = topicSelect(page)
     await expect(select).toHaveValue('crypto')
 
     const msgsText = await page.locator('.stat-card .value').first().textContent()

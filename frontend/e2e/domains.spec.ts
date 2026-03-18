@@ -7,7 +7,8 @@ test.describe('Domains / Links Page', () => {
 
   test('shows domain count in header', async ({ page }) => {
     const header = page.locator('.section-header h2').first()
-    await expect(header).toBeVisible()
+    // Wait for data to load — header updates from "0 domains" to actual count
+    await expect(header).toContainText(/[1-9]/)
     const text = await header.textContent()
     expect(parseInt(text!.match(/(\d[\d,]*)/)?.[1]?.replace(/,/g, '') || '0')).toBeGreaterThan(5000)
   })
