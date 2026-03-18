@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { formatDate } from '../utils/format'
 import { messagePath, authorPath, threadPath } from '../utils/routes'
 import Pagination from '../components/Pagination'
+import { useTitle } from '../utils/useTitle'
 
 interface Domain {
   domain: string
@@ -24,6 +25,8 @@ export default function Domains() {
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedDomain = searchParams.get('domain')
   const searchQuery = searchParams.get('q') || ''
+
+  useTitle(selectedDomain ? `Links: ${selectedDomain}` : 'Links')
 
   const [domains, setDomains] = useState<Domain[]>([])
   const [totalDomains, setTotalDomains] = useState(0)

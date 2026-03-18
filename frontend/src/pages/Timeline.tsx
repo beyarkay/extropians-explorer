@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ThreadList from '../components/ThreadList'
 import ActivityChart from '../components/ActivityChart'
+import { useTitle } from '../utils/useTitle'
 
 interface TimelinePoint { month: string; count: number }
 interface Stats {
@@ -14,6 +15,7 @@ interface AuthorSuggestion { name: string; post_count: number }
 interface Tag { tag: string; count: number }
 
 export default function Timeline() {
+  useTitle('Timeline')
   const [stats, setStats] = useState<Stats | null>(null)
   const [timeline, setTimeline] = useState<TimelinePoint[]>([])
   const [searchParams, setSearchParams] = useSearchParams()

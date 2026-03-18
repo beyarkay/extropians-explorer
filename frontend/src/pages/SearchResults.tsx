@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { formatDate } from '../utils/format'
 import { threadPath } from '../utils/routes'
 import Pagination from '../components/Pagination'
+import { useTitle } from '../utils/useTitle'
 
 interface SearchResult {
   id: number
@@ -21,6 +22,8 @@ export default function SearchResults() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  useTitle(query ? `Search: ${query}` : 'Search')
 
   useEffect(() => {
     if (query.length < 2) return

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { renderBody } from '../linkify'
 import { formatDateFull } from '../utils/format'
 import { authorPath, threadPath, messagePath } from '../utils/routes'
+import { useTitle } from '../utils/useTitle'
 
 interface MessageData {
   id: number
@@ -24,6 +25,8 @@ interface MessageData {
 export default function MessageView() {
   const { id } = useParams<{ id: string }>()
   const [msg, setMsg] = useState<MessageData | null>(null)
+
+  useTitle(msg?.subject || 'Message')
 
   useEffect(() => {
     if (id) {

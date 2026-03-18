@@ -4,6 +4,7 @@ import { AUTHOR_LINKS } from '../wikipedia'
 import { formatDateMonthOnly } from '../utils/format'
 import { authorPath } from '../utils/routes'
 import Pagination from '../components/Pagination'
+import { useTitle } from '../utils/useTitle'
 
 interface Author {
   name: string
@@ -13,6 +14,7 @@ interface Author {
 }
 
 export default function Authors() {
+  useTitle('Authors')
   const [authors, setAuthors] = useState<Author[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)

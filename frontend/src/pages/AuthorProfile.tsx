@@ -4,6 +4,7 @@ import { AUTHOR_LINKS } from '../wikipedia'
 import { formatDate } from '../utils/format'
 import ThreadList from '../components/ThreadList'
 import ActivityChart from '../components/ActivityChart'
+import { useTitle } from '../utils/useTitle'
 
 interface AuthorData {
   name: string
@@ -17,6 +18,8 @@ interface AuthorData {
 export default function AuthorProfile() {
   const { name } = useParams<{ name: string }>()
   const [author, setAuthor] = useState<AuthorData | null>(null)
+
+  useTitle(author?.name)
 
   useEffect(() => {
     if (name) {

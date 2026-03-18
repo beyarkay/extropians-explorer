@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { GLOSSARY } from '../glossary'
 import { tagColor, tagBg } from '../tagColors'
 import { Link } from 'react-router-dom'
+import { useTitle } from '../utils/useTitle'
 
 const categories = [...new Set(GLOSSARY.map(e => e.category).filter(Boolean))] as string[]
 
 export default function Glossary() {
+  useTitle('Glossary')
   const [filter, setFilter] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 

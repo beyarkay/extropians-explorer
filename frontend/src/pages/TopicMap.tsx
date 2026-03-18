@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { messagePath } from '../utils/routes'
+import { useTitle } from '../utils/useTitle'
 
 interface Point {
   id: number; x: number; y: number; c: number
@@ -47,6 +48,7 @@ function tagColors(tags: string[]): string {
 type ColorMode = 'cluster' | 'year' | 'author' | 'tag'
 
 export default function TopicMap() {
+  useTitle('Embeddings')
   const [allPoints, setAllPoints] = useState<Point[]>([])
   const [totalPointCount, setTotalPointCount] = useState(0)
   const [clusters, setClusters] = useState<Cluster[]>([])

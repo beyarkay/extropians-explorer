@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTitle } from '../utils/useTitle'
 
 interface Stats {
   total_messages: number
@@ -13,6 +14,7 @@ const P = ({ children }: { children: React.ReactNode }) => (
 )
 
 export default function About() {
+  useTitle('About')
   const [stats, setStats] = useState<Stats | null>(null)
   useEffect(() => { fetch('/api/stats').then(r => r.json()).then(setStats) }, [])
 

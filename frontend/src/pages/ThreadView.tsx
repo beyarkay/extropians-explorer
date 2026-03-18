@@ -4,6 +4,7 @@ import { linkify } from '../linkify'
 import { tagColor, tagBg } from '../tagColors'
 import { formatDateWithTime } from '../utils/format'
 import { authorPath, messagePath } from '../utils/routes'
+import { useTitle } from '../utils/useTitle'
 
 interface Message {
   id: number
@@ -136,6 +137,8 @@ export default function ThreadView() {
 
   const tree = useMemo(() => buildTree(messages), [messages])
   const flat = useMemo(() => flattenTree(tree), [tree])
+
+  useTitle(tree[0]?.message.subject?.replace(/^Re:\s*/i, '') || 'Thread')
 
   // Participants sorted by message count
   const participants = useMemo(() => {
