@@ -177,8 +177,15 @@ export default function About() {
         <a href="http://extropians.weidai.com/" target="_blank" rel="noopener">extropians.weidai.com</a>.
       </P>
 
+      <P>
+        This website is hosted by{' '}
+        <a href="https://boydkane.com/projects/extropians" target="_blank" rel="noopener">Boyd Kane</a>.
+        The source code is available on{' '}
+        <a href="https://github.com/beyarkay/extropians-explorer" target="_blank" rel="noopener">GitHub</a>.
+      </P>
+
       <p style={{ color: 'var(--text-tertiary)', marginTop: 24, fontSize: 10 }}>
-        Built with Python (FastAPI), SQLite (FTS5), React, and Recharts.
+        Built with Python (FastAPI), SQLite (FTS5), React, Recharts, and OpenAI embeddings.
       </p>
     </div>
   )
