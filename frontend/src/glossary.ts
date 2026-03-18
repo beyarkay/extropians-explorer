@@ -31,9 +31,9 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     term: "duck",
     definition:
-      "List in-joke: a profanity filter on the Extropians list replaced a common expletive with 'duck'. See /message/65039 and /message/66330 for context.",
-    aka: ["ducking", "ducked"],
-    category: "community",
+      'From the duck test: "if it walks like a duck and quacks like a duck, it must be a duck." Used in debates about identity, cloning, and xox — if an emulation of you looks and acts like you, is it you? See /message/65039 and /message/66330.',
+    aka: ["duck me"],
+    category: "consciousness",
   },
   // Acronyms
   {
