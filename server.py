@@ -588,8 +588,8 @@ def map_points(chunk: int = 0, chunk_size: int = 5000):
             "points": [
                 {
                     "id": r["message_id"],
-                    "x": round(r["x"], 4),
-                    "y": round(r["y"], 4),
+                    "x": round(r["x"], 2),
+                    "y": round(r["y"], 2),
                     "c": r["cluster_id"],
                     "a": r["from_name"],
                     "s": r["subject"],
@@ -610,7 +610,7 @@ def map_points_3d(chunk: int = 0, chunk_size: int = 5000):
     with get_db() as db:
         total = db.execute("SELECT COUNT(*) FROM projections").fetchone()[0]
         rows = db.execute("""
-            SELECT p.message_id, p.x, p.y, p.z, p.cluster_id,
+            SELECT p.message_id, p.x3, p.y3, p.z3, p.cluster_id,
                    m.from_name, m.subject, m.year_month, m.thread_id,
                    SUBSTR(m.body, 1, 300) as preview
             FROM projections p
@@ -637,9 +637,9 @@ def map_points_3d(chunk: int = 0, chunk_size: int = 5000):
             "points": [
                 {
                     "id": r["message_id"],
-                    "x": round(r["x"], 4),
-                    "y": round(r["y"], 4),
-                    "z": round(r["z"] or 0, 4),
+                    "x": round(r["x3"], 2),
+                    "y": round(r["y3"], 2),
+                    "z": round(r["z3"] or 0, 2),
                     "c": r["cluster_id"],
                     "a": r["from_name"],
                     "s": r["subject"],
@@ -659,7 +659,7 @@ def map_clusters_3d():
     with get_db() as db:
         clusters = db.execute("SELECT * FROM clusters ORDER BY cluster_id").fetchall()
         centroids = db.execute("""
-            SELECT cluster_id, AVG(x) as cx, AVG(y) as cy, AVG(z) as cz
+            SELECT cluster_id, AVG(x3) as cx, AVG(y3) as cy, AVG(z3) as cz
             FROM projections GROUP BY cluster_id
         """).fetchall()
         centroid_map = {r["cluster_id"]: (r["cx"], r["cy"], r["cz"]) for r in centroids}
@@ -671,9 +671,9 @@ def map_clusters_3d():
                 "top_words": c["top_words"],
                 "top_authors": c["top_authors"],
                 "count": c["message_count"],
-                "cx": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[0], 4),
-                "cy": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[1], 4),
-                "cz": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[2], 4),
+                "cx": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[0], 2),
+                "cy": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[1], 2),
+                "cz": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[2], 2),
             }
             for c in clusters
         ]
@@ -698,8 +698,8 @@ def map_clusters():
                 "top_words": c["top_words"],
                 "top_authors": c["top_authors"],
                 "count": c["message_count"],
-                "cx": round(centroid_map.get(c["cluster_id"], (0, 0))[0], 4),
-                "cy": round(centroid_map.get(c["cluster_id"], (0, 0))[1], 4),
+                "cx": round(centroid_map.get(c["cluster_id"], (0, 0))[0], 2),
+                "cy": round(centroid_map.get(c["cluster_id"], (0, 0))[1], 2),
             }
             for c in clusters
         ]
