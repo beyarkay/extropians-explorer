@@ -603,6 +603,82 @@ def map_points(chunk: int = 0, chunk_size: int = 5000):
         }
 
 
+@app.get("/api/map/points3d")
+def map_points_3d(chunk: int = 0, chunk_size: int = 5000):
+    """Return 3D projected points in chunks for progressive loading."""
+    offset = chunk * chunk_size
+    with get_db() as db:
+        total = db.execute("SELECT COUNT(*) FROM projections").fetchone()[0]
+        rows = db.execute("""
+            SELECT p.message_id, p.x, p.y, p.z, p.cluster_id,
+                   m.from_name, m.subject, m.year_month, m.thread_id,
+                   SUBSTR(m.body, 1, 300) as preview
+            FROM projections p
+            JOIN messages m ON m.id = p.message_id
+            ORDER BY p.message_id
+            LIMIT ? OFFSET ?
+        """, (chunk_size, offset)).fetchall()
+
+        msg_ids = [r["message_id"] for r in rows]
+        tags_by_msg: dict[int, list[str]] = {}
+        if msg_ids:
+            placeholders = ",".join("?" * len(msg_ids))
+            tag_rows = db.execute(
+                f"SELECT message_id, tag FROM message_tags WHERE message_id IN ({placeholders})",
+                msg_ids,
+            ).fetchall()
+        for r in (tag_rows if msg_ids else []):
+            tags_by_msg.setdefault(r["message_id"], []).append(r["tag"])
+
+        return {
+            "total": total,
+            "chunk": chunk,
+            "has_more": offset + chunk_size < total,
+            "points": [
+                {
+                    "id": r["message_id"],
+                    "x": round(r["x"], 4),
+                    "y": round(r["y"], 4),
+                    "z": round(r["z"] or 0, 4),
+                    "c": r["cluster_id"],
+                    "a": r["from_name"],
+                    "s": r["subject"],
+                    "m": r["year_month"],
+                    "p": (r["preview"] or "")[:250],
+                    "t": tags_by_msg.get(r["message_id"], []),
+                    "th": r["thread_id"],
+                }
+                for r in rows
+            ],
+        }
+
+
+@app.get("/api/map/clusters3d")
+def map_clusters_3d():
+    """Return cluster metadata with 3D centroids."""
+    with get_db() as db:
+        clusters = db.execute("SELECT * FROM clusters ORDER BY cluster_id").fetchall()
+        centroids = db.execute("""
+            SELECT cluster_id, AVG(x) as cx, AVG(y) as cy, AVG(z) as cz
+            FROM projections GROUP BY cluster_id
+        """).fetchall()
+        centroid_map = {r["cluster_id"]: (r["cx"], r["cy"], r["cz"]) for r in centroids}
+
+        return [
+            {
+                "id": c["cluster_id"],
+                "label": c["label"],
+                "top_words": c["top_words"],
+                "top_authors": c["top_authors"],
+                "count": c["message_count"],
+                "cx": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[0], 4),
+                "cy": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[1], 4),
+                "cz": round(centroid_map.get(c["cluster_id"], (0, 0, 0))[2], 4),
+            }
+            for c in clusters
+        ]
+
+
 @app.get("/api/map/clusters")
 def map_clusters():
     """Return cluster metadata with centroids."""

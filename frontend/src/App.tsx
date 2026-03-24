@@ -10,6 +10,7 @@ import About from './pages/About'
 import Glossary from './pages/Glossary'
 import Domains from './pages/Domains'
 import FastMap from './pages/FastMap'
+import Embeddings3D from './pages/Embeddings3D'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -53,6 +54,7 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/message/:id" element={<MessageView />} />
           <Route path="/embeddings" element={<FastMap />} />
+          <Route path="/embeddings3d" element={<Embeddings3D />} />
           <Route path="/domains" element={<Domains />} />
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/about" element={<About />} />
