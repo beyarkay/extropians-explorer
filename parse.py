@@ -13,7 +13,26 @@ from pathlib import Path
 
 
 DB_PATH = Path("extropians.db")
-ARCHIVES_DIR = Path("data/archives")
+
+# Archive sources: (directory, file glob, source_archive label, date sanity range)
+ARCHIVE_SOURCES = [
+    {
+        "dir": Path("data/archives"),
+        "glob": "list-archive.*",
+        "source": "extropians",
+        "url": "https://github.com/macterra/extropians",
+        "min_year": 1995,
+        "max_year": 2005,
+    },
+    {
+        "dir": Path("data/extropy-chat"),
+        "glob": "*.txt",
+        "source": "extropy-chat",
+        "url": "https://lists.extropy.org/pipermail/extropy-chat/",
+        "min_year": 2003,
+        "max_year": 2027,
+    },
+]
 
 
 def init_db(conn: sqlite3.Connection):
@@ -32,7 +51,8 @@ def init_db(conn: sqlite3.Connection):
             in_reply_to TEXT,
             refs TEXT,
             thread_id TEXT,
-            source_file TEXT
+            source_file TEXT,
+            source_archive TEXT DEFAULT 'extropians'
         );
         CREATE INDEX IF NOT EXISTS idx_date ON messages(date_epoch);
         CREATE INDEX IF NOT EXISTS idx_year_month ON messages(year_month);
@@ -110,15 +130,14 @@ def extract_body(msg: email.message.Message) -> str:
     return "\n".join(result).strip()
 
 
-def parse_date(msg: email.message.Message) -> tuple[str | None, int | None, str | None]:
+def parse_date(msg: email.message.Message, min_year: int = 1995, max_year: int = 2027) -> tuple[str | None, int | None, str | None]:
     """Return (iso_date, epoch, year_month)."""
     raw = msg.get("Date")
     if not raw:
         return None, None, None
     try:
         parsed = email.utils.parsedate_to_datetime(raw)
-        # Sanity check: must be between 1995 and 2005
-        if parsed.year < 1995 or parsed.year > 2005:
+        if parsed.year < min_year or parsed.year > max_year:
             return None, None, None
         iso = parsed.isoformat()
         epoch = int(parsed.timestamp())
@@ -270,56 +289,65 @@ def parse_all():
     conn.execute("PRAGMA synchronous=NORMAL")
     init_db(conn)
 
-    mbox_files = sorted(ARCHIVES_DIR.glob("list-archive.*"))
-    print(f"Found {len(mbox_files)} mbox files")
-
     total = 0
     dupes = 0
     errors = 0
 
-    for mbox_path in mbox_files:
-        mbox = mailbox.mbox(str(mbox_path))
-        count = 0
-        for idx, msg in enumerate(mbox):
-            try:
-                message_id = make_message_id(msg, mbox_path.name, idx)
-                date_iso, date_epoch, year_month = parse_date(msg)
+    for source in ARCHIVE_SOURCES:
+        src_dir = source["dir"]
+        if not src_dir.exists():
+            print(f"Skipping {source['source']}: {src_dir} not found")
+            continue
 
-                from_raw = decode_header(msg.get("From", ""))
-                # Parse "Name <email>" format
-                from_name, from_email = email.utils.parseaddr(from_raw)
-                if not from_name:
-                    from_name = from_email.split("@")[0] if from_email else "Unknown"
-                from_name_original = from_name.strip().strip('"').strip("'")
-                from_name_original = re.sub(r"\s+", " ", from_name_original)
-                from_name = normalise_name(from_name)
+        mbox_files = sorted(src_dir.glob(source["glob"]))
+        print(f"\n[{source['source']}] Found {len(mbox_files)} files in {src_dir}")
 
-                subject = decode_header(msg.get("Subject", ""))
-                body = extract_body(msg)
+        source_label = source["source"]
+        min_year = source["min_year"]
+        max_year = source["max_year"]
 
-                in_reply_to = (msg.get("In-Reply-To") or "").strip().strip("<>")
-                references = (msg.get("References") or "").strip()
+        for mbox_path in mbox_files:
+            mbox = mailbox.mbox(str(mbox_path))
+            count = 0
+            for idx, msg in enumerate(mbox):
+                try:
+                    message_id = make_message_id(msg, mbox_path.name, idx)
+                    date_iso, date_epoch, year_month = parse_date(msg, min_year, max_year)
 
-                conn.execute(
-                    """INSERT OR IGNORE INTO messages
-                       (message_id, date, date_epoch, year_month, from_name, from_name_original,
-                        from_email, subject, body, in_reply_to, refs, source_file)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (message_id, date_iso, date_epoch, year_month, from_name, from_name_original,
-                     from_email, subject, body, in_reply_to, references, mbox_path.name),
-                )
-                if conn.total_changes > total + count:
-                    count += 1
-                else:
-                    dupes += 1
-            except Exception as e:
-                errors += 1
-                if errors < 10:
-                    print(f"  Error in {mbox_path.name} msg {idx}: {e}")
+                    from_raw = decode_header(msg.get("From", ""))
+                    from_name, from_email = email.utils.parseaddr(from_raw)
+                    if not from_name:
+                        from_name = from_email.split("@")[0] if from_email else "Unknown"
+                    from_name_original = from_name.strip().strip('"').strip("'")
+                    from_name_original = re.sub(r"\s+", " ", from_name_original)
+                    from_name = normalise_name(from_name)
 
-        conn.commit()
-        total += count
-        print(f"  {mbox_path.name}: {count} messages")
+                    subject = decode_header(msg.get("Subject", ""))
+                    body = extract_body(msg)
+
+                    in_reply_to = (msg.get("In-Reply-To") or "").strip().strip("<>")
+                    references = (msg.get("References") or "").strip()
+
+                    conn.execute(
+                        """INSERT OR IGNORE INTO messages
+                           (message_id, date, date_epoch, year_month, from_name, from_name_original,
+                            from_email, subject, body, in_reply_to, refs, source_file, source_archive)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (message_id, date_iso, date_epoch, year_month, from_name, from_name_original,
+                         from_email, subject, body, in_reply_to, references, mbox_path.name, source_label),
+                    )
+                    if conn.total_changes > total + count:
+                        count += 1
+                    else:
+                        dupes += 1
+                except Exception as e:
+                    errors += 1
+                    if errors < 20:
+                        print(f"  Error in {mbox_path.name} msg {idx}: {e}")
+
+            conn.commit()
+            total += count
+            print(f"  {mbox_path.name}: {count} messages")
 
     print(f"\nTotal: {total} messages ({dupes} duplicates, {errors} errors)")
 
