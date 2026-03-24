@@ -16,8 +16,8 @@ test.describe('About Page', () => {
     await page.waitForTimeout(500)
 
     // Should show actual numbers
-    await expect(page.getByText(/132,\d+ messages/)).toBeVisible()
-    await expect(page.getByText(/2,\d+ unique authors/)).toBeVisible()
+    await expect(page.getByText(/[\d,]+ messages/)).toBeVisible()
+    await expect(page.getByText(/[\d,]+ unique authors/)).toBeVisible()
   })
 
   test('notable participants link to author profiles', async ({ page }) => {

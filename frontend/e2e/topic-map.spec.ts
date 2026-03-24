@@ -24,6 +24,8 @@ test.describe('Topic Map / Embeddings Page', () => {
     await page.goto('/embeddings')
     const select = page.locator('select:has(option:text("all clusters"))')
     await expect(select).toBeVisible()
+    // Wait for clusters to load from API
+    await expect(select.locator('option')).not.toHaveCount(1, { timeout: 10000 })
     const options = await select.locator('option').count()
     expect(options).toBeGreaterThan(10) // 75 clusters + "all clusters"
   })

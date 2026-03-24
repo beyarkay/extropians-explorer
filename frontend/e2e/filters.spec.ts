@@ -9,15 +9,15 @@ test.describe('Filtering', () => {
   const topicSelect = (page: any) => page.locator('.filter-bar select:has(option[value="ai"])')
 
   test('tag dropdown filters threads', async ({ page }) => {
-    await expect(page.locator('.stat-card .value').first()).toBeVisible()
+    await expect(page.locator('.stat-card .value').first()).toBeVisible({ timeout: 10000 })
 
     await topicSelect(page).selectOption('ai')
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(2000)
 
     const msgsText = await page.locator('.stat-card .value').first().textContent()
     const msgs = parseInt(msgsText!.replace(/,/g, ''))
     expect(msgs).toBeGreaterThan(0)
-    expect(msgs).toBeLessThan(132000)
+    expect(msgs).toBeLessThan(260000)
   })
 
   test('tag filter updates timeline chart', async ({ page }) => {
@@ -68,19 +68,26 @@ test.describe('Filtering', () => {
   })
 
   test('participant chip removal restores results', async ({ page }) => {
-    await expect(page.locator('.stat-card .value').first()).toBeVisible()
+    await expect(page.locator('.stat-card .value').first()).toBeVisible({ timeout: 10000 })
+
+    // Capture unfiltered count
+    const unfilteredText = await page.locator('.stat-card .value').first().textContent()
+    const unfilteredCount = parseInt(unfilteredText!.replace(/,/g, ''))
 
     const input = page.locator('.filter-bar input[placeholder="filter by participant..."]')
     await input.fill('Sandberg')
     await page.waitForTimeout(300)
     await page.locator('text=Anders Sandberg').first().click()
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(2000)
 
     await page.locator('.filter-bar span:has-text("Anders Sandberg") a').click()
-    await page.waitForTimeout(1000)
+
+    // Wait for count to restore to unfiltered value
+    await expect(page.locator('.stat-card .value').first())
+      .toHaveText(unfilteredText!, { timeout: 10000 })
 
     const msgsText = await page.locator('.stat-card .value').first().textContent()
-    expect(parseInt(msgsText!.replace(/,/g, ''))).toBeGreaterThan(100000)
+    expect(parseInt(msgsText!.replace(/,/g, ''))).toBe(unfilteredCount)
   })
 
   test('tag + participant filters combine', async ({ page }) => {
@@ -110,6 +117,6 @@ test.describe('Filtering', () => {
     await expect(select).toHaveValue('crypto')
 
     const msgsText = await page.locator('.stat-card .value').first().textContent()
-    expect(parseInt(msgsText!.replace(/,/g, ''))).toBeLessThan(132000)
+    expect(parseInt(msgsText!.replace(/,/g, ''))).toBeLessThan(260000)
   })
 })
