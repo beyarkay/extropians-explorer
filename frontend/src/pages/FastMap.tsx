@@ -39,8 +39,8 @@ function clusterColorRgb(id: number): [number, number, number] {
 function yearColorRgb(ym: string): [number, number, number] {
   if (!ym) return [0.27, 0.27, 0.27]
   const year = parseInt(ym.split('-')[0])
-  const t = (year - 1996) / 7
-  return hslToRgb(t * 270, 60, 50)
+  const t = Math.max(0, Math.min(1, (year - 1995) / 31))
+  return hslToRgb(t * 300, 65, 50)
 }
 
 function authorColorRgb(name: string): [number, number, number] {
@@ -495,8 +495,10 @@ export default function FastMap() {
     if (colorMode === 'year') {
       ctx.font = '9px monospace'
       ctx.textAlign = 'left'
-      for (let y = 1996; y <= 2003; y++) {
-        const i = y - 1996
+      const legendYears = [1996, 1998, 2000, 2002, 2004, 2006, 2010, 2015, 2020, 2025]
+      for (let yi = 0; yi < legendYears.length; yi++) {
+        const y = legendYears[yi]
+        const i = yi
         const [r, g, b] = yearColorRgb(`${y}-01`)
         ctx.fillStyle = `rgb(${r*255},${g*255},${b*255})`
         ctx.fillRect(w - 80, 10 + i * 14, 10, 10)

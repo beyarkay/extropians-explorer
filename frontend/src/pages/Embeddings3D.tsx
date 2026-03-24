@@ -39,7 +39,8 @@ function clusterColorRgb(id: number): [number, number, number] {
 function yearColorRgb(ym: string): [number, number, number] {
   if (!ym) return [0.27, 0.27, 0.27]
   const year = parseInt(ym.split('-')[0])
-  return hslToRgb(((year - 1996) / 7) * 270, 60, 50)
+  const t = Math.max(0, Math.min(1, (year - 1995) / 31))
+  return hslToRgb(t * 300, 65, 50)
 }
 function authorColorRgb(name: string): [number, number, number] {
   let hash = 0
