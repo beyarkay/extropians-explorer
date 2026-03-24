@@ -4,5 +4,12 @@ __pycache__/
 *.pyc
 .venv/
 *.db
+*.db-shm
+*.db-wal
 data/
 .DS_Store
+.env
+.claude/
+test-results/
+kill
+resume-claude.md
