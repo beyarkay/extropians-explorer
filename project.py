@@ -73,7 +73,14 @@ def main():
                   'such', 'back', 'long', 'right', 'come', 'few', 'made', 'first', 'need',
                   'each', 'too', 'down', 'after', 'before', 'between', 'through', 'where',
                   'because', 'while', 'both', 'off', 'now', 'let', 'work', 'part', 'point',
-                  'world', 'system', 'case', 'since', 'doesn', 'couldn'}
+                  'world', 'system', 'case', 'since', 'doesn', 'couldn',
+                  # List-specific terms that appear in almost every message
+                  'exi', 'extropy-chat', 'extropy', 'chat', 'extropian', 'extropians',
+                  'fwd', 'fyi', 'ot', 'otoh', 'imho', 'imo', 'btw', 'afaik',
+                  'http', 'https', 'www', 'com', 'org', 'net', 'html', 'htm',
+                  'wrote', 'writes', 'said', 'says', 'message', 'post', 'thread',
+                  'list', 'mail', 'email', 'subject', 'date', 'sent',
+                  'again', 'another', 'here', 'there', 'meta', 'spike', 'fwd'}
 
     for cluster_id in tqdm(range(N_CLUSTERS), desc="Labeling clusters"):
         mask = cluster_ids == cluster_id
