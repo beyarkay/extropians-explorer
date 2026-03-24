@@ -457,10 +457,10 @@ export default function FastMap() {
 
   }, [allPoints, points, view, colorMode, isFiltered, highlightedThread, toScreen])
 
-  // Draw cluster labels on overlay canvas
+  // Draw overlay labels (cluster labels + year legend)
   useEffect(() => {
     const lc = labelCanvasRef.current
-    if (!lc || colorMode !== 'cluster') return
+    if (!lc) return
     const ctx = lc.getContext('2d')
     if (!ctx) return
     const container = containerRef.current
@@ -473,21 +473,24 @@ export default function FastMap() {
     ctx.clearRect(0, 0, lc.width, lc.height)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-    const fontSize = Math.max(9, Math.min(13, 10 * Math.sqrt(view.scale)))
-    ctx.font = `${fontSize}px -apple-system, sans-serif`
-    ctx.textAlign = 'center'
+    // Cluster labels
+    if (colorMode === 'cluster') {
+      const fontSize = Math.max(9, Math.min(13, 10 * Math.sqrt(view.scale)))
+      ctx.font = `${fontSize}px -apple-system, sans-serif`
+      ctx.textAlign = 'center'
 
-    for (const c of clusters) {
-      if (selectedCluster !== null && c.id !== selectedCluster) continue
-      const { x, y } = toScreen(c.cx, c.cy, w, h)
-      if (x < 0 || x > w || y < 0 || y > h) continue
-      if (view.scale > 0.8 || c.count > 2000) {
-        const label = c.label.split(' / ').slice(0, 2).join(' / ')
-        const tw = ctx.measureText(label).width
-        ctx.fillStyle = 'rgba(13, 17, 23, 0.75)'
-        ctx.fillRect(x - tw / 2 - 3, y - 7, tw + 6, 16)
-        ctx.fillStyle = clusterColorCss(c.id)
-        ctx.fillText(label, x, y + 4)
+      for (const c of clusters) {
+        if (selectedCluster !== null && c.id !== selectedCluster) continue
+        const { x, y } = toScreen(c.cx, c.cy, w, h)
+        if (x < 0 || x > w || y < 0 || y > h) continue
+        if (view.scale > 0.8 || c.count > 2000) {
+          const label = c.label.split(' / ').slice(0, 2).join(' / ')
+          const tw = ctx.measureText(label).width
+          ctx.fillStyle = 'rgba(13, 17, 23, 0.75)'
+          ctx.fillRect(x - tw / 2 - 3, y - 7, tw + 6, 16)
+          ctx.fillStyle = clusterColorCss(c.id)
+          ctx.fillText(label, x, y + 4)
+        }
       }
     }
 
