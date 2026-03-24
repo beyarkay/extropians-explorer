@@ -322,6 +322,20 @@ export default function FastMap() {
     const obs = new ResizeObserver(handleResize)
     obs.observe(container)
 
+    // Start render loop
+    const loop = () => {
+      animFrameRef.current = requestAnimationFrame(loop)
+      const now = performance.now()
+      const times = frameTimesRef.current
+      times.push(now)
+      while (times.length > 0 && times[0] < now - 1000) times.shift()
+      if (fpsRef.current) {
+        fpsRef.current.textContent = `${times.length} fps`
+      }
+      renderer.render(scene, camera)
+    }
+    loop()
+
     return () => {
       obs.disconnect()
       cancelAnimationFrame(animFrameRef.current)
@@ -360,7 +374,7 @@ export default function FastMap() {
         const p = allPoints[i]
         const { x, y } = toScreen(p.x, p.y, w, h)
         positions[i * 3] = x
-        positions[i * 3 + 1] = h - y // flip Y for Three.js
+        positions[i * 3 + 1] = y
         positions[i * 3 + 2] = 0
         colors[i * 3] = 0.33; colors[i * 3 + 1] = 0.33; colors[i * 3 + 2] = 0.33
         alphas[i] = 0.08
@@ -397,7 +411,7 @@ export default function FastMap() {
       const p = points[i]
       const { x, y } = toScreen(p.x, p.y, w, h)
       positions[i * 3] = x
-      positions[i * 3 + 1] = h - y
+      positions[i * 3 + 1] = y
       positions[i * 3 + 2] = 0
 
       const inThread = ht && ht.has(p.id)
@@ -485,32 +499,6 @@ export default function FastMap() {
       }
     }
   }, [clusters, view, colorMode, selectedCluster, toScreen])
-
-  // Render loop
-  useEffect(() => {
-    const renderer = rendererRef.current
-    const scene = sceneRef.current
-    const camera = cameraRef.current
-    if (!renderer || !scene || !camera) return
-
-    const loop = () => {
-      animFrameRef.current = requestAnimationFrame(loop)
-
-      // FPS
-      const now = performance.now()
-      const times = frameTimesRef.current
-      times.push(now)
-      while (times.length > 0 && times[0] < now - 1000) times.shift()
-      if (fpsRef.current) {
-        fpsRef.current.textContent = `${times.length} fps`
-      }
-
-      renderer.render(scene, camera)
-    }
-    loop()
-
-    return () => cancelAnimationFrame(animFrameRef.current)
-  }, [])
 
   // Mouse handlers
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
