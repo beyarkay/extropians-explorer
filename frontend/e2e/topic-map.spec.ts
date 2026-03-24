@@ -9,7 +9,7 @@ test.describe('Topic Map / Embeddings Page', () => {
 
   test('shows canvas element', async ({ page }) => {
     await page.goto('/embeddings')
-    await expect(page.locator('canvas')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('canvas').first()).toBeVisible({ timeout: 10000 })
   })
 
   test('shows color mode toggles', async ({ page }) => {
@@ -88,7 +88,7 @@ test.describe('Topic Map / Embeddings Page', () => {
   test('page refresh does not 404', async ({ page }) => {
     await page.goto('/embeddings')
     await page.reload()
-    await expect(page.locator('canvas')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('canvas').first()).toBeVisible({ timeout: 10000 })
   })
 })
 
