@@ -20,6 +20,8 @@ export default function Timeline() {
   const [timeline, setTimeline] = useState<TimelinePoint[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedMonth = searchParams.get('month')
+  const [monthFrom, setMonthFrom] = useState(searchParams.get('from') || '')
+  const [monthTo, setMonthTo] = useState(searchParams.get('to') || '')
 
   // Participant filter
   const [participants, setParticipants] = useState<string[]>([])
@@ -169,11 +171,11 @@ export default function Timeline() {
               style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>x</a>
           </span>
         ))}
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 4 }}>topic:</span>
+        <span className="filter-label">topic:</span>
         <select
           value={selectedTag || ''}
           onChange={e => { setSelectedTag(e.target.value || null) }}
-          style={{ width: 130 }}
+          className="filter-select-topic"
         >
           <option value="">all topics</option>
           {allTags.map(t => (
@@ -184,11 +186,11 @@ export default function Timeline() {
           <a href="#" onClick={e => { e.preventDefault(); setSelectedTag(null) }}
             style={{ fontSize: 10 }}>[clear]</a>
         )}
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 4 }}>cluster:</span>
+        <span className="filter-label">cluster:</span>
         <select
           value={selectedCluster ?? ''}
           onChange={e => { setSelectedCluster(e.target.value ? parseInt(e.target.value) : null) }}
-          style={{ width: 180 }}
+          className="filter-select-cluster"
         >
           <option value="">all clusters</option>
           {allClusters.map(c => (
@@ -201,8 +203,34 @@ export default function Timeline() {
         )}
       </div>
 
+      {/* Date range filter */}
+      <div className="filter-bar" style={{ alignItems: 'center' }}>
+        <span className="filter-label" style={{ marginLeft: 0 }}>date range:</span>
+        <input
+          type="month"
+          value={monthFrom}
+          onChange={e => setMonthFrom(e.target.value)}
+          style={{ width: 130 }}
+          placeholder="from"
+        />
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>–</span>
+        <input
+          type="month"
+          value={monthTo}
+          onChange={e => setMonthTo(e.target.value)}
+          style={{ width: 130 }}
+          placeholder="to"
+        />
+        {(monthFrom || monthTo) && (
+          <a href="#" onClick={e => { e.preventDefault(); setMonthFrom(''); setMonthTo('') }}
+            style={{ fontSize: 10 }}>[clear]</a>
+        )}
+      </div>
+
       <ThreadList
         month={selectedMonth}
+        monthFrom={monthFrom}
+        monthTo={monthTo}
         participants={participants}
         cluster={selectedCluster}
         tag={selectedTag}

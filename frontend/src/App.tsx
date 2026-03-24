@@ -30,6 +30,7 @@ function App() {
         <nav>
           <NavLink to="/" end>Timeline</NavLink>
           <NavLink to="/embeddings">Embeddings</NavLink>
+          <NavLink to="/embeddings3d">3D</NavLink>
           <NavLink to="/authors">Authors</NavLink>
           <NavLink to="/domains">Links</NavLink>
           <NavLink to="/glossary">Glossary</NavLink>

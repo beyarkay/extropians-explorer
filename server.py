@@ -120,6 +120,8 @@ def timeline(
 @app.get("/api/threads")
 def list_threads(
     month: str | None = None,
+    month_from: str | None = None,
+    month_to: str | None = None,
     author: str | None = None,
     participants: list[str] = Query(default=[]),
     tag: str | None = None,
@@ -138,6 +140,17 @@ def list_threads(
                 SELECT DISTINCT thread_id FROM messages WHERE year_month = ?
             )""")
             params.append(month)
+        elif month_from or month_to:
+            range_conds = []
+            if month_from:
+                range_conds.append("year_month >= ?")
+                params.append(month_from)
+            if month_to:
+                range_conds.append("year_month <= ?")
+                params.append(month_to)
+            where.append(f"""thread_id IN (
+                SELECT DISTINCT thread_id FROM messages WHERE {' AND '.join(range_conds)}
+            )""")
         if author:
             where.append("participants LIKE ?")
             params.append(f"%{author}%")

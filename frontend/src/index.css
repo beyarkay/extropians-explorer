@@ -500,6 +500,20 @@ mark {
   font-size: 11px;
 }
 .filter-bar button:hover { background: var(--accent-hover); }
+.filter-label {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  margin-left: 4px;
+}
+.filter-select-topic { width: 130px; }
+.filter-select-cluster { width: 180px; }
+
+@media (max-width: 640px) {
+  .filter-label { display: none; }
+  .filter-select-topic { width: 100px; }
+  .filter-select-cluster { width: 120px; }
+  .filter-bar input { width: 140px !important; }
+}
 
 .back-link {
   display: inline-block;

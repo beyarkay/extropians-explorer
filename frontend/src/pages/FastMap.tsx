@@ -195,12 +195,16 @@ export default function FastMap() {
 
   // Load data
   useEffect(() => {
-    fetch('/api/map/clusters').then(r => r.json()).then(setClusters)
+    let cancelled = false
+    const abort = new AbortController()
+    fetch('/api/map/clusters', { signal: abort.signal }).then(r => r.json()).then(d => { if (!cancelled) setClusters(d) }).catch(() => {})
     let accumulated: Point[] = []
     let boundsSet = false
     const loadChunk = async (chunk: number) => {
-      const res = await fetch(`/api/map/points?chunk=${chunk}`)
+      if (cancelled) return
+      const res = await fetch(`/api/map/points?chunk=${chunk}`, { signal: abort.signal })
       const data = await res.json()
+      if (cancelled) return
       accumulated = [...accumulated, ...data.points]
       setAllPoints([...accumulated])
       setTotalPointCount(data.total)
@@ -218,11 +222,12 @@ export default function FastMap() {
         boundsRef.current = { minX: minX - padX, maxX: maxX + padX, minY: minY - padY, maxY: maxY + padY }
       }
       setLoading(false)
-      if (data.has_more) {
+      if (data.has_more && !cancelled) {
         requestAnimationFrame(() => loadChunk(chunk + 1))
       }
     }
-    loadChunk(0)
+    loadChunk(0).catch(() => {})
+    return () => { cancelled = true; abort.abort() }
   }, [])
 
   // Autocomplete

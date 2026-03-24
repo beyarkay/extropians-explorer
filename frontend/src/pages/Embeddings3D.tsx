@@ -131,20 +131,25 @@ export default function Embeddings3D() {
 
   // Load data
   useEffect(() => {
-    fetch('/api/map/clusters3d').then(r => r.json()).then(setClusters)
+    let cancelled = false
+    const abort = new AbortController()
+    fetch('/api/map/clusters3d', { signal: abort.signal }).then(r => r.json()).then(d => { if (!cancelled) setClusters(d) }).catch(() => {})
     let accumulated: Point[] = []
     const loadChunk = async (chunk: number) => {
-      const res = await fetch(`/api/map/points3d?chunk=${chunk}`)
+      if (cancelled) return
+      const res = await fetch(`/api/map/points3d?chunk=${chunk}`, { signal: abort.signal })
       const data = await res.json()
+      if (cancelled) return
       accumulated = [...accumulated, ...data.points]
       setAllPoints([...accumulated])
       setTotalPointCount(data.total)
       setLoading(false)
-      if (data.has_more) {
+      if (data.has_more && !cancelled) {
         requestAnimationFrame(() => loadChunk(chunk + 1))
       }
     }
-    loadChunk(0)
+    loadChunk(0).catch(() => {})
+    return () => { cancelled = true; abort.abort() }
   }, [])
 
   // Compute center and scale from first chunk only — prevents view jumping
