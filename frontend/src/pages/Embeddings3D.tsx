@@ -123,9 +123,11 @@ export default function Embeddings3D() {
   const fpsRef = useRef<HTMLDivElement>(null)
   const frameTimesRef = useRef<number[]>([])
 
-  // Data bounds for centering
+  // Data bounds for centering (set once from first chunk)
   const centerRef = useRef(new THREE.Vector3())
   const scaleRef = useRef(1)
+  const boundsSetRef = useRef(false)
+  const didDragRef = useRef(false)
 
   // Load data
   useEffect(() => {
@@ -145,9 +147,10 @@ export default function Embeddings3D() {
     loadChunk(0)
   }, [])
 
-  // Compute center and scale from data
+  // Compute center and scale from first chunk only — prevents view jumping
   useEffect(() => {
-    if (allPoints.length === 0) return
+    if (allPoints.length === 0 || boundsSetRef.current) return
+    boundsSetRef.current = true
     let minX = Infinity, maxX = -Infinity
     let minY = Infinity, maxY = -Infinity
     let minZ = Infinity, maxZ = -Infinity
@@ -158,7 +161,7 @@ export default function Embeddings3D() {
     }
     centerRef.current.set((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
     const range = Math.max(maxX - minX, maxY - minY, maxZ - minZ)
-    scaleRef.current = range > 0 ? 20 / range : 1 // Normalize to ~20 units
+    scaleRef.current = range > 0 ? 20 / range : 1
   }, [allPoints])
 
   // Autocomplete
@@ -231,6 +234,10 @@ export default function Embeddings3D() {
     sceneRef.current = scene
     cameraRef.current = camera
     controlsRef.current = controls
+
+    // Track when OrbitControls starts/ends a drag to suppress click navigation
+    controls.addEventListener('start', () => { didDragRef.current = false })
+    controls.addEventListener('change', () => { didDragRef.current = true })
 
     // Raycaster for hover
     raycasterRef.current.params.Points = { threshold: 0.3 }
@@ -373,6 +380,7 @@ export default function Embeddings3D() {
   }, [points])
 
   const handleClick = useCallback(() => {
+    if (didDragRef.current) return
     if (hoveredPoint) navigate(messagePath(hoveredPoint.id))
   }, [hoveredPoint, navigate])
 
