@@ -51,8 +51,8 @@ def main():
     print(f"Matrix shape: {embeddings.shape}")
 
     # K-means clustering
-    print(f"\nRunning K-means with {N_CLUSTERS} clusters...")
-    kmeans = KMeans(n_clusters=N_CLUSTERS, random_state=42, n_init=10, verbose=0)
+    print(f"\nRunning K-means with {N_CLUSTERS} clusters (n_init=10)...")
+    kmeans = KMeans(n_clusters=N_CLUSTERS, random_state=42, n_init=10, verbose=1)
     cluster_ids = kmeans.fit_predict(embeddings)
     print("Clustering done")
 
@@ -75,7 +75,7 @@ def main():
                   'because', 'while', 'both', 'off', 'now', 'let', 'work', 'part', 'point',
                   'world', 'system', 'case', 'since', 'doesn', 'couldn'}
 
-    for cluster_id in range(N_CLUSTERS):
+    for cluster_id in tqdm(range(N_CLUSTERS), desc="Labeling clusters"):
         mask = cluster_ids == cluster_id
         cluster_subjects = [subjects[i] for i in range(len(subjects)) if mask[i]]
         cluster_authors = [authors[i] for i in range(len(authors)) if mask[i]]
@@ -98,22 +98,30 @@ def main():
             "top_authors": top_authors,
             "count": int(mask.sum()),
         }
-        print(f"  Cluster {cluster_id:2d} ({mask.sum():5d} msgs): {label}  [{', '.join(top_authors[:3])}]")
+
+    # Print cluster summary
+    for cid in sorted(cluster_labels, key=lambda c: -cluster_labels[c]["count"]):
+        info = cluster_labels[cid]
+        print(f"  Cluster {cid:2d} ({info['count']:5d} msgs): {info['label']}  [{', '.join(info['top_authors'][:3])}]")
 
     # UMAP 2D projection
     print(f"\nRunning UMAP 2D (n_neighbors={UMAP_2D['n_neighbors']}, min_dist={UMAP_2D['min_dist']})...")
-    coords_2d = UMAP(
+    print("  Step 1/3: Building nearest neighbor graph...")
+    umap_2d = UMAP(
         n_components=2, metric='cosine', random_state=42, verbose=True,
         **UMAP_2D,
-    ).fit_transform(embeddings)
+    )
+    coords_2d = umap_2d.fit_transform(embeddings)
     print(f"UMAP 2D done. Shape: {coords_2d.shape}")
 
     # UMAP 3D projection
     print(f"\nRunning UMAP 3D (n_neighbors={UMAP_3D['n_neighbors']}, min_dist={UMAP_3D['min_dist']})...")
-    coords_3d = UMAP(
+    print("  Step 1/3: Building nearest neighbor graph...")
+    umap_3d = UMAP(
         n_components=3, metric='cosine', random_state=42, verbose=True,
         **UMAP_3D,
-    ).fit_transform(embeddings)
+    )
+    coords_3d = umap_3d.fit_transform(embeddings)
     print(f"UMAP 3D done. Shape: {coords_3d.shape}")
 
     # Store results
