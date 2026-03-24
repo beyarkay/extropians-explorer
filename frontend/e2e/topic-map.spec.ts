@@ -2,18 +2,18 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Topic Map / Embeddings Page', () => {
   test('loads and shows point count', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     // Wait for first chunk to load
     await expect(page.getByText(/\d+ msgs/)).toBeVisible({ timeout: 10000 })
   })
 
   test('shows canvas element', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await expect(page.locator('canvas')).toBeVisible({ timeout: 10000 })
   })
 
   test('shows color mode toggles', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await expect(page.getByRole('link', { name: 'cluster', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'year', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'author', exact: true })).toBeVisible()
@@ -21,7 +21,7 @@ test.describe('Topic Map / Embeddings Page', () => {
   })
 
   test('cluster filter dropdown has options', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     const select = page.locator('select:has(option:text("all clusters"))')
     await expect(select).toBeVisible()
     const options = await select.locator('option').count()
@@ -29,7 +29,7 @@ test.describe('Topic Map / Embeddings Page', () => {
   })
 
   test('tag filter dropdown has options', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     const select = page.locator('select:has(option:text("all tags"))')
     await expect(select).toBeVisible()
     const options = await select.locator('option').count()
@@ -37,7 +37,7 @@ test.describe('Topic Map / Embeddings Page', () => {
   })
 
   test('filtering by cluster shows fewer points', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await expect(page.getByText(/\d+ msgs/)).toBeVisible({ timeout: 10000 })
 
     // Get initial count
@@ -57,7 +57,7 @@ test.describe('Topic Map / Embeddings Page', () => {
   })
 
   test('clear all removes filters', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await expect(page.getByText(/\d+ msgs/)).toBeVisible({ timeout: 10000 })
 
     // Apply a filter
@@ -75,18 +75,18 @@ test.describe('Topic Map / Embeddings Page', () => {
   })
 
   test('reset view link works', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await expect(page.getByText('reset')).toBeVisible()
   })
 
   test('Embeddings nav link works', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('link', { name: 'Embeddings' }).click()
-    await expect(page).toHaveURL('/map')
+    await expect(page).toHaveURL('/embeddings')
   })
 
   test('page refresh does not 404', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await page.reload()
     await expect(page.locator('canvas')).toBeVisible({ timeout: 10000 })
   })

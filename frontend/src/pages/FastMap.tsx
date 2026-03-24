@@ -142,7 +142,7 @@ const fragmentShader = `
 `
 
 export default function FastMap() {
-  useTitle('Embeddings (WebGL)')
+  useTitle('Embeddings')
   const [allPoints, setAllPoints] = useState<Point[]>([])
   const [totalPointCount, setTotalPointCount] = useState(0)
   const [clusters, setClusters] = useState<Cluster[]>([])

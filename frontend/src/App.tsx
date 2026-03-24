@@ -9,7 +9,6 @@ import MessageView from './pages/MessageView'
 import About from './pages/About'
 import Glossary from './pages/Glossary'
 import Domains from './pages/Domains'
-import TopicMap from './pages/TopicMap'
 import FastMap from './pages/FastMap'
 
 function App() {
@@ -29,7 +28,7 @@ function App() {
         <h1>Extropians</h1>
         <nav>
           <NavLink to="/" end>Timeline</NavLink>
-          <NavLink to="/map">Embeddings</NavLink>
+          <NavLink to="/embeddings">Embeddings</NavLink>
           <NavLink to="/authors">Authors</NavLink>
           <NavLink to="/domains">Links</NavLink>
           <NavLink to="/glossary">Glossary</NavLink>
@@ -53,8 +52,7 @@ function App() {
           <Route path="/thread/:threadId" element={<ThreadView />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/message/:id" element={<MessageView />} />
-          <Route path="/map" element={<TopicMap />} />
-          <Route path="/fastmap" element={<FastMap />} />
+          <Route path="/embeddings" element={<FastMap />} />
           <Route path="/domains" element={<Domains />} />
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/about" element={<About />} />

@@ -52,7 +52,7 @@ test.describe('Page Titles', () => {
   })
 
   test('embeddings page has Embeddings title', async ({ page }) => {
-    await page.goto('/map')
+    await page.goto('/embeddings')
     await expect(page).toHaveTitle(/Embeddings.*Extropians/)
   })
 

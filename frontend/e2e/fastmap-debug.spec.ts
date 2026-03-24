@@ -9,13 +9,8 @@ test('FastMap vs Map comparison', async ({ page }) => {
     consoleLogs.push(`[PAGE ERROR] ${err.message}`)
   })
 
-  // Screenshot original /map for comparison
-  await page.goto('/map')
-  await page.waitForTimeout(8000)
-  await page.screenshot({ path: 'test-results/map-original.png', fullPage: false })
-
-  // Screenshot /fastmap
-  await page.goto('/fastmap')
+  // Screenshot /embeddings
+  await page.goto('/embeddings')
   await page.waitForTimeout(8000)
   await page.screenshot({ path: 'test-results/fastmap-webgl.png', fullPage: false })
 
