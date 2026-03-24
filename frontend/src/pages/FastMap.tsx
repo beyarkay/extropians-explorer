@@ -570,8 +570,6 @@ export default function FastMap() {
     return w.length > words ? w.slice(0, words).join(' ') + '...' : text
   }
 
-  if (loading) return <div className="loading">Loading message embeddings...</div>
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 50px)', margin: '-8px -16px', padding: '0 8px', overflow: 'hidden' }}>
       {/* Controls bar */}
@@ -685,6 +683,16 @@ export default function FastMap() {
         onWheel={handleWheel}
         onClick={handleClick}
       >
+        {/* Loading overlay */}
+        {loading && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: '#0d1117', zIndex: 10, color: 'var(--text-tertiary)', fontSize: 12,
+          }}>
+            Loading message embeddings...
+          </div>
+        )}
+
         {/* Label overlay canvas */}
         <canvas
           ref={labelCanvasRef}
