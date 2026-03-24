@@ -66,16 +66,16 @@ Then open http://localhost:8000.
 
 ### Key Files
 
-| File | Description |
-|---|---|
-| `parse.py` | Parses mbox files into SQLite with threading, FTS, author normalization |
-| `tag_messages.py` | Tags messages with 13 topics via keyword regex matching |
-| `extract_urls.py` | Extracts URLs from messages into domain index |
-| `embed.py` | Embeds messages using OpenAI API (stats/smoke/run modes) |
-| `project.py` | Computes UMAP 2D projections and k-means clusters from embeddings |
-| `server.py` | FastAPI backend with REST API |
-| `frontend/` | React SPA |
-| `deploy/` | Nginx config and server start script |
+| File              | Description                                                             |
+| ----------------- | ----------------------------------------------------------------------- |
+| `parse.py`        | Parses mbox files into SQLite with threading, FTS, author normalization |
+| `tag_messages.py` | Tags messages with 13 topics via keyword regex matching                 |
+| `extract_urls.py` | Extracts URLs from messages into domain index                           |
+| `embed.py`        | Embeds messages using OpenAI API (stats/smoke/run modes)                |
+| `project.py`      | Computes UMAP 2D projections and k-means clusters from embeddings       |
+| `server.py`       | FastAPI backend with REST API                                           |
+| `frontend/`       | React SPA                                                               |
+| `deploy/`         | Nginx config and server start script                                    |
 
 ## Tests
 
@@ -95,6 +95,7 @@ npx playwright test --headed
 ## Deployment
 
 Deployed automatically on push to `main` via GitHub Actions. The workflow:
+
 1. Runs TypeScript checks and builds the frontend
 2. Rsyncs code + built frontend to the server (DB is managed separately)
 3. Restarts the FastAPI server on port 8002
@@ -104,24 +105,24 @@ The DB is not in source control (too large). It lives on the server and is updat
 
 ## API
 
-| Endpoint | Description |
-|---|---|
-| `GET /api/stats` | Message/author/thread counts (supports `?tag=`, `?participants=`) |
-| `GET /api/timeline` | Monthly message counts (supports filters) |
-| `GET /api/tags` | List all topic tags with counts |
-| `GET /api/clusters` | List all embedding clusters with labels |
-| `GET /api/threads` | Paginated thread list (`?month=`, `?author=`, `?participants=`, `?tag=`, `?cluster=`, `?sort=`) |
-| `GET /api/thread/:id` | All messages in a thread with tags and cluster IDs |
-| `GET /api/message/:id` | Single message with prev/next navigation |
-| `GET /api/messages` | Individual messages (`?month=`, `?author=`) |
-| `GET /api/authors` | Paginated author list |
-| `GET /api/authors/search` | Author name autocomplete |
-| `GET /api/author/:name` | Author profile with activity and messages |
-| `GET /api/search` | Full-text search with snippets |
-| `GET /api/domains` | Domain list with URL counts |
-| `GET /api/domain/:domain` | URLs for a domain with context snippets |
-| `GET /api/map/points` | Chunked UMAP-projected points for topic map |
-| `GET /api/map/clusters` | Cluster metadata with centroids |
+| Endpoint                  | Description                                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| `GET /api/stats`          | Message/author/thread counts (supports `?tag=`, `?participants=`)                               |
+| `GET /api/timeline`       | Monthly message counts (supports filters)                                                       |
+| `GET /api/tags`           | List all topic tags with counts                                                                 |
+| `GET /api/clusters`       | List all embedding clusters with labels                                                         |
+| `GET /api/threads`        | Paginated thread list (`?month=`, `?author=`, `?participants=`, `?tag=`, `?cluster=`, `?sort=`) |
+| `GET /api/thread/:id`     | All messages in a thread with tags and cluster IDs                                              |
+| `GET /api/message/:id`    | Single message with prev/next navigation                                                        |
+| `GET /api/messages`       | Individual messages (`?month=`, `?author=`)                                                     |
+| `GET /api/authors`        | Paginated author list                                                                           |
+| `GET /api/authors/search` | Author name autocomplete                                                                        |
+| `GET /api/author/:name`   | Author profile with activity and messages                                                       |
+| `GET /api/search`         | Full-text search with snippets                                                                  |
+| `GET /api/domains`        | Domain list with URL counts                                                                     |
+| `GET /api/domain/:domain` | URLs for a domain with context snippets                                                         |
+| `GET /api/map/points`     | Chunked UMAP-projected points for topic map                                                     |
+| `GET /api/map/clusters`   | Cluster metadata with centroids                                                                 |
 
 ## Data Source
 
