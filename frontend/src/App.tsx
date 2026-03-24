@@ -10,6 +10,7 @@ import About from './pages/About'
 import Glossary from './pages/Glossary'
 import Domains from './pages/Domains'
 import TopicMap from './pages/TopicMap'
+import FastMap from './pages/FastMap'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -53,6 +54,7 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/message/:id" element={<MessageView />} />
           <Route path="/map" element={<TopicMap />} />
+          <Route path="/fastmap" element={<FastMap />} />
           <Route path="/domains" element={<Domains />} />
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/about" element={<About />} />
