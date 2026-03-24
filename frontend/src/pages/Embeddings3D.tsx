@@ -331,8 +331,8 @@ export default function Embeddings3D() {
       pos[i*3+2] = (p.z - center.z) * s
 
       const inThread = ht && ht.has(p.id)
-      alp[i] = ht ? (inThread ? 1.0 : 0.3) : (isFiltered ? 0.85 : 0.5)
-      siz[i] = inThread ? 0.3 : 0.1
+      alp[i] = ht ? (inThread ? 1.0 : 0.35) : (isFiltered ? 0.9 : 0.75)
+      siz[i] = inThread ? 0.4 : 0.18
 
       const [r, g, b] = colorMode === 'cluster' ? clusterColorRgb(p.c)
         : colorMode === 'year' ? yearColorRgb(p.m)
