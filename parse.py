@@ -229,6 +229,9 @@ AUTHOR_ALIASES = {
     "Spike66": "Spike Jones",
     "Spike": "Spike Jones",
     "Jones, Spike": "Spike Jones",
+    "Spike At Rainier66.Com": "Spike Jones",
+    "Spike66New": "Spike Jones",
+    "Thespike At Satx.Rr.Com": "Spike Jones",
     # Robert Coyote
     "[ Robert-Coyote ]": "Robert Coyote",
     # Randy S / Cryofan (NOT Randy Smith — different person)
@@ -252,6 +255,8 @@ AUTHOR_ALIASES = {
     # Greg Burch
     "Gburch1": "Greg Burch",
     "Gburch1@Aol.Com": "Greg Burch",
+    # BillK
+    "Bill K": "BillK",
     # Artillo
     "Artillo5": "Artillo",
     "Artilloz": "Artillo",
