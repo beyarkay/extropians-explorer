@@ -356,7 +356,8 @@ export default function FastMap() {
     const h = rect.height
 
     const ht = highlightedThread
-    const dotSize = Math.max(2, Math.min(8, 2 * Math.sqrt(view.scale))) * window.devicePixelRatio
+    // Match original Canvas 2D sizing: base 0.8-4px, but gl_PointSize is diameter not radius
+    const dotSize = Math.max(1.5, Math.min(6, 1.5 * Math.sqrt(view.scale))) * window.devicePixelRatio
 
     // Remove old objects
     if (bgPointsObjRef.current) { scene.remove(bgPointsObjRef.current); bgPointsObjRef.current.geometry.dispose() }

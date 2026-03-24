@@ -1,55 +1,49 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 
-test('FastMap WebGL debug', async ({ page }) => {
+test('FastMap vs Map comparison', async ({ page }) => {
   const consoleLogs: string[] = []
   page.on('console', msg => {
-    consoleLogs.push(`[${msg.type()}] ${msg.text()}`)
+    if (msg.type() === 'error') consoleLogs.push(`[${msg.type()}] ${msg.text()}`)
   })
   page.on('pageerror', err => {
     consoleLogs.push(`[PAGE ERROR] ${err.message}`)
   })
 
-  // Navigate and wait a bit for everything to initialize
+  // Screenshot original /map for comparison
+  await page.goto('/map')
+  await page.waitForTimeout(8000)
+  await page.screenshot({ path: 'test-results/map-original.png', fullPage: false })
+
+  // Screenshot /fastmap
   await page.goto('/fastmap')
-  await page.waitForTimeout(5000)
+  await page.waitForTimeout(8000)
+  await page.screenshot({ path: 'test-results/fastmap-webgl.png', fullPage: false })
 
-  // Screenshot immediately
-  await page.screenshot({ path: 'test-results/fastmap-debug.png', fullPage: false })
-
-  // Dump full page HTML structure (abbreviated)
-  const bodyHTML = await page.evaluate(() => {
-    const mainContent = document.querySelector('.main-content')
-    return mainContent?.innerHTML?.substring(0, 3000) || 'NO .main-content FOUND'
-  })
-  console.log('=== MAIN CONTENT HTML ===')
-  console.log(bodyHTML)
-
-  // Count all canvases and check for WebGL
-  const canvasInfo = await page.evaluate(() => {
-    const allCanvases = document.querySelectorAll('canvas')
-    return Array.from(allCanvases).map((c, i) => {
-      // Can't get webgl context if Three.js already has it, so just check attributes
-      return {
-        index: i,
-        width: c.width,
-        height: c.height,
-        cssWidth: c.offsetWidth,
-        cssHeight: c.offsetHeight,
-        style: c.getAttribute('style')?.substring(0, 150) || '',
-        dataEngine: c.getAttribute('data-engine') || null,
-        parentChildren: c.parentElement?.children.length || 0,
+  // Check FPS counter
+  const fpsText = await page.evaluate(() => {
+    const divs = document.querySelectorAll('div')
+    for (const d of divs) {
+      const style = d.getAttribute('style') || ''
+      if (style.includes('monospace') && style.includes('bottom')) {
+        return d.textContent
       }
-    })
+    }
+    return 'NOT FOUND'
   })
-  console.log('=== ALL CANVASES ===')
-  console.log(JSON.stringify(canvasInfo, null, 2))
+  console.log('=== FPS COUNTER ===', fpsText)
 
-  // Check if any network requests failed
-  console.log('=== BROWSER CONSOLE ===')
-  for (const log of consoleLogs) {
-    console.log(log)
+  // Check canvas count and sizes
+  const info = await page.evaluate(() => {
+    const canvases = document.querySelectorAll('canvas')
+    return Array.from(canvases).map(c => ({
+      width: c.width, height: c.height,
+      engine: c.getAttribute('data-engine'),
+    }))
+  })
+  console.log('=== CANVASES ===', JSON.stringify(info))
+
+  if (consoleLogs.length > 0) {
+    console.log('=== ERRORS ===')
+    consoleLogs.forEach(l => console.log(l))
   }
-
-  // Verify something rendered
-  expect(canvasInfo.length).toBeGreaterThan(0)
 })
