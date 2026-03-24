@@ -16,8 +16,9 @@ from tqdm import tqdm
 
 DB_PATH = "extropians.db"
 N_CLUSTERS = 75
-UMAP_NEIGHBORS = 100
-UMAP_MIN_DIST = 0.5
+# Optimal params from sweep on 15K sample of 256K messages
+UMAP_2D = {"n_neighbors": 30, "min_dist": 0.3}
+UMAP_3D = {"n_neighbors": 50, "min_dist": 0.5}
 
 
 def unpack_embedding(blob: bytes) -> np.ndarray:
@@ -100,31 +101,36 @@ def main():
         print(f"  Cluster {cluster_id:2d} ({mask.sum():5d} msgs): {label}  [{', '.join(top_authors[:3])}]")
 
     # UMAP 2D projection
-    print(f"\nRunning UMAP (n_neighbors={UMAP_NEIGHBORS}, min_dist={UMAP_MIN_DIST})...")
-    reducer = UMAP(
-        n_components=2,
-        n_neighbors=UMAP_NEIGHBORS,
-        min_dist=UMAP_MIN_DIST,
-        metric='cosine',
-        random_state=42,
-        verbose=True,
-    )
-    coords_2d = reducer.fit_transform(embeddings)
-    print(f"UMAP done. Shape: {coords_2d.shape}")
+    print(f"\nRunning UMAP 2D (n_neighbors={UMAP_2D['n_neighbors']}, min_dist={UMAP_2D['min_dist']})...")
+    coords_2d = UMAP(
+        n_components=2, metric='cosine', random_state=42, verbose=True,
+        **UMAP_2D,
+    ).fit_transform(embeddings)
+    print(f"UMAP 2D done. Shape: {coords_2d.shape}")
+
+    # UMAP 3D projection
+    print(f"\nRunning UMAP 3D (n_neighbors={UMAP_3D['n_neighbors']}, min_dist={UMAP_3D['min_dist']})...")
+    coords_3d = UMAP(
+        n_components=3, metric='cosine', random_state=42, verbose=True,
+        **UMAP_3D,
+    ).fit_transform(embeddings)
+    print(f"UMAP 3D done. Shape: {coords_3d.shape}")
 
     # Store results
     print("\nStoring results...")
-    conn.executescript("""
-        CREATE TABLE IF NOT EXISTS projections (
+    conn.execute("DROP TABLE IF EXISTS projections")
+    conn.execute("""
+        CREATE TABLE projections (
             message_id INTEGER PRIMARY KEY,
             x REAL NOT NULL,
             y REAL NOT NULL,
-            cluster_id INTEGER NOT NULL,
-            FOREIGN KEY (message_id) REFERENCES messages(id)
-        );
-        CREATE INDEX IF NOT EXISTS idx_proj_cluster ON projections(cluster_id);
+            x3 REAL NOT NULL,
+            y3 REAL NOT NULL,
+            z3 REAL NOT NULL,
+            cluster_id INTEGER NOT NULL
+        )
     """)
-    conn.execute("DELETE FROM projections")
+    conn.execute("CREATE INDEX idx_proj_cluster ON projections(cluster_id)")
 
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS clusters (
@@ -137,11 +143,14 @@ def main():
     """)
     conn.execute("DELETE FROM clusters")
 
-    # Insert projections
+    # Insert projections (2D + 3D)
     for i in tqdm(range(len(msg_ids)), desc="Storing projections"):
         conn.execute(
-            "INSERT INTO projections (message_id, x, y, cluster_id) VALUES (?, ?, ?, ?)",
-            (msg_ids[i], float(coords_2d[i, 0]), float(coords_2d[i, 1]), int(cluster_ids[i])),
+            "INSERT INTO projections (message_id, x, y, x3, y3, z3, cluster_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (msg_ids[i],
+             float(coords_2d[i, 0]), float(coords_2d[i, 1]),
+             float(coords_3d[i, 0]), float(coords_3d[i, 1]), float(coords_3d[i, 2]),
+             int(cluster_ids[i])),
         )
 
     # Insert cluster labels
